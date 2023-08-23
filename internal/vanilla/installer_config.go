@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"github.com/eldius/mineserver-manager/internal/vanilla/versions"
 	"text/template"
 )
 
@@ -44,7 +45,7 @@ type InstallConfig struct {
 	SrvProps    *ServerProperties
 	Dest        string
 	VersionName string
-	v           *VersionInfoResponse
+	v           *versions.VersionInfoResponse
 }
 
 type InstallCfg func(*InstallConfig) *InstallConfig

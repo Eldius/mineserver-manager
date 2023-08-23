@@ -1,9 +1,9 @@
 package vanilla
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/utils"
+	"github.com/eldius/mineserver-manager/internal/vanilla/versions"
 	"log"
 	"net/http"
 	"os"
@@ -11,66 +11,42 @@ import (
 	"time"
 )
 
-type Client struct {
-	c *http.Client
+type InstallerConfig struct {
+	Timeout time.Duration
 }
 
-// NewClient creates a new client
-func NewClient(t time.Duration) *Client {
-	return &Client{c: &http.Client{Timeout: t}}
+type InstallerOpt func(config *InstallerConfig) *InstallerConfig
+
+type Installer struct {
+	cfg InstallerConfig
 }
 
-// ListVersions lists all available versions
-func (c *Client) ListVersions() (*VersionsResponse, error) {
-	res, err := c.c.Get(VersionsURL)
-	if err != nil {
-		err = fmt.Errorf("getting available versions: %w", err)
-		return nil, err
+// NewInstaller creates a new client
+func NewInstaller(configs ...InstallerOpt) *Installer {
+	cfg := &InstallerConfig{
+		Timeout: 1 * time.Second,
 	}
-	defer func() {
-		_ = res.Body.Close()
-	}()
-
-	var versions VersionsResponse
-	if err = json.NewDecoder(res.Body).Decode(&versions); err != nil {
-		err = fmt.Errorf("decoding available versions response: %w", err)
-		return nil, err
+	for _, c := range configs {
+		c(cfg)
 	}
-
-	return &versions, nil
-}
-
-// GetVersionInfo gets a specific version info
-func (c *Client) GetVersionInfo(v Version) (*VersionInfoResponse, error) {
-	res, err := c.c.Get(v.URL)
-	if err != nil {
-		err = fmt.Errorf("getting version info: %w", err)
-		return nil, err
+	return &Installer{
+		cfg: *cfg,
 	}
-	defer func() {
-		_ = res.Body.Close()
-	}()
-
-	var version VersionInfoResponse
-	if err = json.NewDecoder(res.Body).Decode(&version); err != nil {
-		err = fmt.Errorf("decoding version info response: %w", err)
-		return nil, err
-	}
-
-	return &version, nil
 }
 
 // InstallWithConfig installs selected version
-func (c *Client) InstallWithConfig(configs ...InstallCfg) error {
+func (i *Installer) InstallWithConfig(configs ...InstallCfg) error {
 	cfg := installSetup(configs)
 
-	versions, err := c.ListVersions()
+	c := versions.NewClient(versions.WithTimeout(i.cfg.Timeout))
+
+	ver, err := c.ListVersions()
 	if err != nil {
 		err = fmt.Errorf("getting available versions: %w", err)
 		return err
 	}
 
-	v, err := versions.GetVersion(cfg.VersionName)
+	v, err := ver.GetVersion(cfg.VersionName)
 	if err != nil {
 		err = fmt.Errorf("getting version from online versions list for name '%s': %w", cfg.VersionName, err)
 		return err
@@ -82,7 +58,7 @@ func (c *Client) InstallWithConfig(configs ...InstallCfg) error {
 		return err
 	}
 
-	sf, err := c.DownloadServer(*cfg.v, cfg.Dest)
+	sf, err := i.DownloadServer(*cfg.v, cfg.Dest)
 	if err != nil {
 		err = fmt.Errorf("getting version info to install: %w", err)
 		return err
@@ -107,9 +83,9 @@ func installSetup(cfgs []InstallCfg) *InstallConfig {
 	return cfg
 }
 
-// Install installs selected version
-func (c *Client) Install(v VersionInfoResponse, cfg *InstallConfig) error {
-	sf, err := c.DownloadServer(v, cfg.Dest)
+// InstallServer installs selected version
+func (i *Installer) InstallServer(v versions.VersionInfoResponse, cfg *InstallConfig) error {
+	sf, err := i.DownloadServer(v, cfg.Dest)
 	if err != nil {
 		err = fmt.Errorf("getting version info to install: %w", err)
 		return err
@@ -120,9 +96,10 @@ func (c *Client) Install(v VersionInfoResponse, cfg *InstallConfig) error {
 }
 
 // DownloadServer downloads server file
-func (c *Client) DownloadServer(v VersionInfoResponse, dest string) (string, error) {
+func (i *Installer) DownloadServer(v versions.VersionInfoResponse, dest string) (string, error) {
+	client := i.httpInstaller()
 	destFile := filepath.Join(dest, utils.GetFileName(v.Downloads.Server.URL))
-	if err := utils.DownloadFile(c.c, v.Downloads.Server.URL, destFile); err != nil {
+	if err := utils.DownloadFile(&client, v.Downloads.Server.URL, destFile); err != nil {
 		err = fmt.Errorf("getting version info: %w", err)
 		return "", err
 	}
@@ -131,7 +108,7 @@ func (c *Client) DownloadServer(v VersionInfoResponse, dest string) (string, err
 }
 
 // StartScript generates the start script
-func (c *Client) StartScript(s StartupParams, dest string) error {
+func (i *Installer) StartScript(s StartupParams, dest string) error {
 	destFile := filepath.Join(dest, "start.sh")
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
@@ -151,4 +128,15 @@ func (c *Client) StartScript(s StartupParams, dest string) error {
 		return err
 	}
 	return nil
+}
+
+func (i *Installer) httpInstaller() http.Client {
+	return http.Client{Timeout: i.cfg.Timeout}
+}
+
+func WithTimeout(t time.Duration) InstallerOpt {
+	return func(cfg *InstallerConfig) *InstallerConfig {
+		cfg.Timeout = t
+		return cfg
+	}
 }

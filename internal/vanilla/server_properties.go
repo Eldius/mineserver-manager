@@ -162,7 +162,7 @@ type ServerProperties struct {
 	// true - Structures are generated in new chunks.
 	//
 	// Note: Dungeons still generate if this is set to false.
-	GenerateStructures bool
+	GenerateStructures bool `properties:"generate-structures"`
 
 	//generator-settings 	string 	{} 	The settings used to customize world generation. Follow its format and write the corresponding JSON string. Remember to escape all : with \:.
 	//hardcore 	boolean 	false 	If set to true, server difficulty is ignored and set to hard and players are set to spectator mode if they die.

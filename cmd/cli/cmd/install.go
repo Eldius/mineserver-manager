@@ -8,7 +8,6 @@ import (
 	"github.com/eldius/mineserver-manager/internal/vanilla"
 	"github.com/spf13/cobra"
 	"log"
-	"time"
 )
 
 // installCmd represents the install command
@@ -22,12 +21,11 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		client := vanilla.NewClient(2 * time.Second)
+		client := vanilla.NewInstaller()
 		if err := client.InstallWithConfig(vanilla.WithVersion(installServerVersion)); err != nil {
 			err = fmt.Errorf("installing server: %w", err)
 			log.Fatalf("failed to install server: %v", err)
 		}
-
 	},
 }
 
