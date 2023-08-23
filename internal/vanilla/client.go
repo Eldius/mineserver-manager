@@ -61,18 +61,8 @@ func (c *Client) GetVersionInfo(v Version) (*VersionInfoResponse, error) {
 }
 
 // InstallWithConfig installs selected version
-func (c *Client) InstallWithConfig(cfgs ...InstallCfg) error {
-	cfg := &InstallConfig{
-		Start:       GetDefaultScriptParams(),
-		SrvProps:    utils.Must(GetDefaultServerProperties()),
-		Dest:        "./minecraft",
-		VersionName: "latest",
-		v:           nil,
-	}
-
-	for _, c := range cfgs {
-		cfg = c(cfg)
-	}
+func (c *Client) InstallWithConfig(configs ...InstallCfg) error {
+	cfg := installSetup(configs)
 
 	versions, err := c.ListVersions()
 	if err != nil {
@@ -100,6 +90,21 @@ func (c *Client) InstallWithConfig(cfgs ...InstallCfg) error {
 
 	log.Printf("server file: %s", sf)
 	return err
+}
+
+func installSetup(cfgs []InstallCfg) *InstallConfig {
+	cfg := &InstallConfig{
+		Start:       GetDefaultScriptParams(),
+		SrvProps:    utils.Must(GetDefaultServerProperties()),
+		Dest:        "./minecraft",
+		VersionName: "latest",
+		v:           nil,
+	}
+
+	for _, c := range cfgs {
+		cfg = c(cfg)
+	}
+	return cfg
 }
 
 // Install installs selected version
@@ -143,6 +148,7 @@ func (c *Client) StartScript(s StartupParams, dest string) error {
 
 	if _, err := f.Write([]byte(scp)); err != nil {
 		err = fmt.Errorf("writing start script to file: %w", err)
+		return err
 	}
 	return nil
 }

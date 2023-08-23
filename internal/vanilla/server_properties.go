@@ -33,7 +33,7 @@ type ServerProperties struct {
 	// default: false
 	// false - Flight is not allowed (players in air for at least 5 seconds get kicked).
 	// true - Flight is allowed, and used if the player has a fly mod installed.
-	AllowFlight bool `properties="allow-flight"`
+	AllowFlight bool `properties:"allow-flight"`
 
 	// Allows players to travel to the Nether.
 	// allow-nether
@@ -42,19 +42,19 @@ type ServerProperties struct {
 	// default: true
 	// false - Nether portals do not work.
 	// true - The server allows portals to send players to the Nether.
-	AllowNether bool `properties="allow-nether"`
+	AllowNether bool `properties:"allow-nether"`
 
 	// Send console command outputs to all online operators.
 	// broadcast-console-to-ops
 	// type: boolean
 	// default: true
-	BroadcastToOps bool `properties="broadcast-console-to-ops"`
+	BroadcastToOps bool `properties:"broadcast-console-to-ops"`
 
 	// Send rcon console command outputs to all online operators.
 	// broadcast-rcon-to-ops
 	// type: boolean
 	// default: true
-	BroadcastRconToOps bool `properties="broadcast-rcon-to-ops"`
+	BroadcastRconToOps bool `properties:"broadcast-rcon-to-ops"`
 
 	// Defines the difficulty (such as damage dealt by mobs and the way hunger and poison affects players) of the server.
 	// difficulty
@@ -67,52 +67,52 @@ type ServerProperties struct {
 	// easy (1)
 	// normal (2)
 	// hard (3)
-	Difficulty GameDifficulty `properties="difficulty"`
+	Difficulty GameDifficulty `properties:"difficulty"`
 
 	// Enables command blocks.
 	// enable-command-block
 	// type: boolean
 	// default: false
-	EnableCommandBlock bool `properties="enable-command-block"`
+	EnableCommandBlock bool `properties:"enable-command-block"`
 
 	// Exposes an MBean with the Object name net.minecraft.server:type=Server and two attributes averageTickTime and tickTimes exposing the tick times in milliseconds.
 	// enable-jmx-monitoring
 	// type: boolean
 	// default: false
-	EnableJmxMonitoring bool `properties="enable-jmx-monitoring"`
+	EnableJmxMonitoring bool `properties:"enable-jmx-monitoring"`
 
 	// Enables remote access to the server console.
 	// In order for enabling JMX on the Java runtime you also need to add a couple of JVM flags to the startup as documented here.
 	// enable-rcon
 	// type: boolean
 	// default: false
-	EnableRcon bool `properties="enable-rcon"`
+	EnableRcon bool `properties:"enable-rcon"`
 
 	// Makes the server appear as "online" on the server list.
 	//It's not recommended to expose RCON to the Internet, because RCON protocol transfers everything without encryption. Everything (including RCON password) communicated between the RCON server and client can be leaked to someone listening in on your connection.
 	// enable-status
 	// type: boolean
 	// default: true
-	EnableStatus bool `properties="enable-status"`
+	EnableStatus bool `properties:"enable-status"`
 
 	// Enables GameSpy4 protocol server listener. Used to get information about server.
 	// If set to false, it will suppress replies from clients. This means it will appear as offline, but will still accept connections.
 	// enable-query
 	// type: boolean
 	// default: false
-	EnableQuery bool `properties="enable-query"`
+	EnableQuery bool `properties:"enable-query"`
 
 	// If set to true, players without a Mojang-signed public key will not be able to connect to the server.
 	// enforce-secure-profile
 	// type: boolean
 	// default: true
-	EnforceSecureProfile bool `properties="enforce-secure-profile"`
+	EnforceSecureProfile bool `properties:"enforce-secure-profile"`
 
 	// Enforces the whitelist on the server.
 	// enforce-whitelist
 	// type: boolean
 	// default: false
-	EnforceWhitelist bool `properties="enforce-whitelist"`
+	EnforceWhitelist bool `properties:"enforce-whitelist"`
 
 	// Controls how close entities need to be before being sent to clients. Higher values means they'll be rendered from farther away, potentially causing more lag. This is expressed the percentage of the default value. For example, setting to 50 will make it half as usual. This mimics the function on the client video settings (not unlike Render Distance, which the client can customize so long as it's under the server's setting).
 	// When this option is enabled, users who are not present on the whitelist (if it's enabled) get kicked from the server after the server reloads the whitelist file.
@@ -122,7 +122,7 @@ type ServerProperties struct {
 	// entity-broadcast-range-percentage
 	// type: integer (10-1000)
 	// default: 100
-	EntityBroadcastRangePercentage int `properties="entity-broadcast-range-percentage"`
+	EntityBroadcastRangePercentage int `properties:"entity-broadcast-range-percentage"`
 
 	// Force players to join in the default game mode.
 	// Sets the default permission level for [functions](https://minecraft.fandom.com/wiki/Function_(Java_Edition).
@@ -132,13 +132,13 @@ type ServerProperties struct {
 	// force-gamemode
 	// type: boolean
 	// default: false
-	ForceGameMode bool `properties="force-gamemode"`
+	ForceGameMode bool `properties:"force-gamemode"`
 
 	// See [permission level](https://minecraft.fandom.com/wiki/Permission_level) for the details on the 4 levels.
 	// function-permission-level
 	// type: integer (1-4)
 	// default: 2
-	FunctionPermissionLevel int `properties="function-permission-level"`
+	FunctionPermissionLevel int `properties:"function-permission-level"`
 
 	// Defines the mode of gameplay.
 	// gamemode
@@ -151,7 +151,7 @@ type ServerProperties struct {
 	//creative (1)
 	//adventure (2)
 	//spectator (3)
-	GameMode GameMode `properties="gamemode"`
+	GameMode GameMode `properties:"gamemode"`
 
 	// Defines whether structures (such as villages) can be generated.
 	// generate-structures
