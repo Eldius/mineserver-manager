@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-func TestClient_DownloadServer(t *testing.T) {
+func TestInstaller_DownloadServer(t *testing.T) {
 	t.Run("", func(t *testing.T) {
 		gock.New("https://piston-data.mojang.com").
 			Get("/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar").
