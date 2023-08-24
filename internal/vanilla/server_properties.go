@@ -164,57 +164,121 @@ type ServerProperties struct {
 	// Note: Dungeons still generate if this is set to false.
 	GenerateStructures bool `properties:"generate-structures"`
 
-	//generator-settings 	string 	{} 	The settings used to customize world generation. Follow its format and write the corresponding JSON string. Remember to escape all : with \:.
-	//hardcore 	boolean 	false 	If set to true, server difficulty is ignored and set to hard and players are set to spectator mode if they die.
-	//hide-online-players 	boolean 	false 	If set to true, a player list is not sent on status requests.
-	//initial-disabled-packs 	string 	blank 	Comma-separated list of datapacks to not be auto-enabled on world creation.
-	//initial-enabled-packs 	string 	vanilla 	Comma-separated list of datapacks to be enabled during world creation. Feature packs need to be explicitly enabled.
-	//level-name 	string 	world 	The "level-name" value is used as the world name and its folder name. The player may also copy their saved game folder here, and change the name to the same as that folder's to load it instead.
+	// The settings used to customize world generation. Follow its format and write the corresponding JSON string. Remember to escape all : with \:.
+	// generator-settings
+	// type: string
+	// default: {}
+	GeneratorSettings string `properties:"generator-settings"`
+
+	// If set to true, server difficulty is ignored and set to hard and players are set to spectator mode if they die.
+	// hardcore
+	// type: boolean
+	// default: false
+	Hardcore bool `properties:"hardcore"`
+
+	// If set to true, a player list is not sent on status requests.
+	// hide-online-players
+	// type: boolean
+	// default: false
+	HideOnlinePlayers bool `properties:"hide-online-players"`
+
+	// Comma-separated list of datapacks to not be auto-enabled on world creation.
+	// initial-disabled-packs
+	// type: string
+	// default: blank
+	InitialDisabledPacks string `properties:"initial-disabled-packs"`
+
+	// Comma-separated list of datapacks to be enabled during world creation. Feature packs need to be explicitly enabled.
+	// initial-enabled-packs
+	// type: string
+	// default: vanilla
+	InitialEnabledPacks string `properties:"initial-enabled-packs"`
+
+	// The "level-name" value is used as the world name and its folder name. The player may also copy their saved game folder here, and change the name to the same as that folder's to load it instead.
+	// level-name
+	// type: string
+	// default: world
 	//
-	//Characters such as ' (apostrophe) may need to be escaped by adding a backslash before them.
-	//
-	//level-seed 	string 	blank 	Sets a world seed for the player's world, as in Singleplayer. The world generates with a random seed if left blank.
+	// Characters such as ' (apostrophe) may need to be escaped by adding a backslash before them.
+	LevelName string `properties:"level-name"`
+
+	// Sets a world seed for the player's world, as in Singleplayer. The world generates with a random seed if left blank.
+	// level-seed
+	// type: string
+	// default: blank
 	//
 	//Some examples are: minecraft, 404, 1a2b3c.
+	LevelSeed string `properties:"level-seed"`
+
+	// Determines the world preset that is generated.
+	// level-type
+	// type: string
+	// default: minecraft:normal
 	//
-	//level-type 	string 	minecraft:normal 	Determines the world preset that is generated.
+	// Escaping ":" is required when using a world preset ID, and the vanilla world preset ID's namespace (minecraft:) can be omitted.
 	//
-	//Escaping ":" is required when using a world preset ID, and the vanilla world preset ID's namespace (minecraft:) can be omitted.
+	// minecraft:normal - Standard world with hills, valleys, water, etc.
+	// minecraft:flat - A flat world with no features, can be modified with generator-settings.
+	// minecraft:large_biomes - Same as default but all biomes are larger.
+	// minecraft:amplified - Same as default but world-generation height limit is increased.
+	// minecraft:single_biome_surface - A buffet world which the entire overworld consists of one biome, can be modified with generator-settings.
+	// buffet - Only for 1.15 or before. Same as default unless generator-settings is set.
+	// default_1_1 - Only for 1.15 or before. Same as default, but counted as a different world type.
+	// customized - Only for 1.15 or before. After 1.13, this value is no different than default, but in 1.12 and before, it could be used to create a completely custom world.
+	LevelType string `properties:"level-type"`
+
+	// Limiting the amount of consecutive neighbor updates before skipping additional ones. Negative values remove the limit.
+	// max-chained-neighbor-updates
+	// type: integer
+	// default: 1000000
+	MaxChainedNeighborUpdates int `properties:"max-chained-neighbor-updates"`
+
+	// The maximum number of players that can play on the server at the same time. Note that more players on the server consume more resources. Note also, op player connections are not supposed to count against the max players, but ops currently cannot join a full server. However, this can be changed by going to the file called ops.json in the player's server directory, opening it, finding the op that the player wants to change, and changing the setting called bypassesPlayerLimit to true (the default is false). This means that that op does not have to wait for a player to leave in order to join. Extremely large values for this field result in the client-side user list being broken.
+	// max-players
+	// type: integer (0-(2^31 - 1))
+	// default: 20
+	MaxPlayers int `properties:"max-players"`
+
+	// The maximum number of milliseconds a single tick may take before the server watchdog stops the server with the message, A single server tick took 60.00 seconds (should be max 0.05); Considering it to be crashed, server will forcibly shutdown. Once this criterion is met, it calls System.exit(1).
+	// max-tick-time
+	// type: integer (-1 or 0–(2^63 - 1))
+	// default: 60000
 	//
-	//minecraft:normal - Standard world with hills, valleys, water, etc.
-	//minecraft:flat - A flat world with no features, can be modified with generator-settings.
-	//minecraft:large_biomes - Same as default but all biomes are larger.
-	//minecraft:amplified - Same as default but world-generation height limit is increased.
-	//minecraft:single_biome_surface - A buffet world which the entire overworld consists of one biome, can be modified with generator-settings.
-	//buffet - Only for 1.15 or before. Same as default unless generator-settings is set.
-	//default_1_1 - Only for 1.15 or before. Same as default, but counted as a different world type.
-	//customized - Only for 1.15 or before. After 1.13, this value is no different than default, but in 1.12 and before, it could be used to create a completely custom world.
+	// -1 - disable watchdog entirely (this disable option was added in 14w32a)
+	MaxTickTime int64 `properties:"max-tick-time"`
+
+	// This sets the maximum possible size in blocks, expressed as a radius, that the world border can obtain. Setting the world border bigger causes the commands to complete successfully but the actual border does not move past this block limit. Setting the max-world-size higher than the default doesn't appear to do anything.
+	// max-world-size
+	// type: integer (1-29999984)
+	// default: 29999984
 	//
-	//max-chained-neighbor-updates 	integer[more information needed] 	1000000 	Limiting the amount of consecutive neighbor updates before skipping additional ones. Negative values remove the limit.
-	//max-players 	integer (0-(2^31 - 1)) 	20 	The maximum number of players that can play on the server at the same time. Note that more players on the server consume more resources. Note also, op player connections are not supposed to count against the max players, but ops currently cannot join a full server. However, this can be changed by going to the file called ops.json in the player's server directory, opening it, finding the op that the player wants to change, and changing the setting called bypassesPlayerLimit to true (the default is false). This means that that op does not have to wait for a player to leave in order to join. Extremely large values for this field result in the client-side user list being broken.
-	//max-tick-time 	integer (-1 or 0–(2^63 - 1)) 	60000 	The maximum number of milliseconds a single tick may take before the server watchdog stops the server with the message, A single server tick took 60.00 seconds (should be max 0.05); Considering it to be crashed, server will forcibly shutdown. Once this criterion is met, it calls System.exit(1).
+	// Examples:
 	//
-	//-1 - disable watchdog entirely (this disable option was added in 14w32a)
+	// Setting max-world-size to 1000 allows the player to have a 2000×2000 world border.
+	// Setting max-world-size to 4000 gives the player an 8000×8000 world border.
+	MaxWorldSize int64 `properties:"max-world-size"`
+
+	// This is the message that is displayed in the server list of the client, below the name.
+	// motd
+	// type: string
+	// default: A Minecraft Server
 	//
-	//max-world-size 	integer (1-29999984) 	29999984 	This sets the maximum possible size in blocks, expressed as a radius, that the world border can obtain. Setting the world border bigger causes the commands to complete successfully but the actual border does not move past this block limit. Setting the max-world-size higher than the default doesn't appear to do anything.
+	// The MOTD supports color and formatting codes.
+	// The MOTD supports special characters, such as "♥". However, such characters must be converted to escaped Unicode form. An online converter can be found here.
+	// If the MOTD is over 59 characters, the server list may report a communication error.
+	Motd string `properties:"motd"`
+
+	// By default it allows packets that are n-1 bytes big to go normally, but a packet of n bytes or more gets compressed down. So, a lower number means more compression but compressing small amounts of bytes might actually end up with a larger result than what went in.
+	// network-compression-threshold
+	// type: integer
+	// default: 256
 	//
-	//Examples:
+	// -1 - disable compression entirely
+	// 0 - compress everything
 	//
-	//Setting max-world-size to 1000 allows the player to have a 2000×2000 world border.
-	//Setting max-world-size to 4000 gives the player an 8000×8000 world border.
-	//
-	//motd 	string 	A Minecraft Server 	This is the message that is displayed in the server list of the client, below the name.
-	//
-	//The MOTD supports color and formatting codes.
-	//The MOTD supports special characters, such as "♥". However, such characters must be converted to escaped Unicode form. An online converter can be found here.
-	//If the MOTD is over 59 characters, the server list may report a communication error.
-	//
-	//network-compression-threshold 	integer 	256 	By default it allows packets that are n-1 bytes big to go normally, but a packet of n bytes or more gets compressed down. So, a lower number means more compression but compressing small amounts of bytes might actually end up with a larger result than what went in.
-	//
-	//-1 - disable compression entirely
-	//0 - compress everything
-	//
-	//Note: The Ethernet spec requires that packets less than 64 bytes become padded to 64 bytes. Thus, setting a value lower than 64 may not be beneficial. It is also not recommended to exceed the MTU, typically 1500 bytes.
+	// Note: The Ethernet spec requires that packets less than 64 bytes become padded to 64 bytes. Thus, setting a value lower than 64 may not be beneficial. It is also not recommended to exceed the MTU, typically 1500 bytes.
+	NetworkCompressionThreshold int `properties:"network-compression-threshold"`
+
 	//online-mode 	boolean 	true 	Server checks connecting players against Minecraft account database. Set this to false only if the player's server is not connected to the Internet. Hackers with fake accounts can connect if this is set to false! If minecraft.net is down or inaccessible, no players can connect if this is set to true. Setting this variable to off purposely is called "cracking" a server, and servers that are present with online mode off are called "cracked" servers, allowing players with unlicensed copies of Minecraft to join.
 	//
 	//true - Enabled. The server assumes it has an Internet connection and checks every connecting player.
