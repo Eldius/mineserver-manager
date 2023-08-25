@@ -47,7 +47,8 @@ func Setup(cfgFile string) {
 SetDefaults sets default configuration values
 */
 func SetDefaults() {
-	viper.SetDefault("curseforge.timeout", "30s")
+	viper.SetDefault(minecraftApiTimeoutPropKey, "10s")
+	viper.SetDefault(minecraftDownloadTimeoutPropKey, "300s")
 	viper.SetDefault("app.devmode", false)
 	viper.SetDefault("app.request.log", false)
 	viper.SetDefault("app.install.path", "./.tmp")

@@ -1,10 +1,9 @@
-package vanilla
+package serverconfig
 
 import (
 	"bytes"
 	"embed"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/vanilla/versions"
 	"text/template"
 )
 
@@ -38,21 +37,4 @@ func (s StartupParams) ToScript() (string, error) {
 	}
 
 	return b.String(), nil
-}
-
-type InstallConfig struct {
-	Start       *StartupParams
-	SrvProps    *ServerProperties
-	Dest        string
-	VersionName string
-	v           *versions.VersionInfoResponse
-}
-
-type InstallCfg func(*InstallConfig) *InstallConfig
-
-func WithVersion(v string) InstallCfg {
-	return func(c *InstallConfig) *InstallConfig {
-		c.VersionName = v
-		return c
-	}
 }

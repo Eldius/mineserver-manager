@@ -3,7 +3,6 @@ package java
 import (
 	"fmt"
 	utils "github.com/eldius/mineserver-manager/internal/utils"
-	"net/http"
 	"os"
 	"path/filepath"
 	"time"
@@ -28,10 +27,7 @@ var (
 )
 
 // DownloadJDK downloads JVM package
-func DownloadJDK(v int, arch, osName string) (string, error) {
-	c := &http.Client{
-		Timeout: 5 * time.Second,
-	}
+func DownloadJDK(v int, arch, osName string, timeout time.Duration) (string, error) {
 	u := JavaVersions[v][osName][arch]
 	tempDir, err := os.MkdirTemp(os.TempDir(), "mine-installer-*")
 	if err != nil {
@@ -40,7 +36,7 @@ func DownloadJDK(v int, arch, osName string) (string, error) {
 	}
 
 	dest := filepath.Join(tempDir, utils.GetFileName(u))
-	if err := utils.DownloadFile(c, u, dest); err != nil {
+	if err := utils.DownloadFile(timeout, u, dest); err != nil {
 		err = fmt.Errorf("downloading java runtime: %w", err)
 		return "", err
 	}

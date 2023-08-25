@@ -1,7 +1,7 @@
 package vanilla
 
 import (
-	"github.com/eldius/mineserver-manager/internal/vanilla/versions"
+	"github.com/eldius/mineserver-manager/vanilla/versions"
 	"github.com/h2non/gock"
 	"github.com/stretchr/testify/assert"
 	"os"
@@ -17,7 +17,7 @@ func TestInstaller_DownloadServer(t *testing.T) {
 			Reply(200).
 			File("./versions/samples/versions.json")
 
-		c := NewInstaller(WithTimeout(1 * time.Second))
+		c := NewInstallService(WithTimeout(1 * time.Second))
 
 		v := versions.VersionInfoResponse{
 			Downloads: versions.Downloads{

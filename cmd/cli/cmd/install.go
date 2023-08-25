@@ -1,13 +1,11 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/vanilla"
+	"github.com/eldius/mineserver-manager/internal/config"
+	"github.com/eldius/mineserver-manager/vanilla"
 	"github.com/spf13/cobra"
-	"log"
+	"log/slog"
 )
 
 // installCmd represents the install command
@@ -21,22 +19,29 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		client := vanilla.NewInstaller()
-		if err := client.InstallWithConfig(vanilla.WithVersion(installServerVersion)); err != nil {
+		client := vanilla.NewInstallService(vanilla.WithTimeout(
+			config.GetMinecraftApiTimeout()),
+			vanilla.WithDownloadTimeout(config.GetMinecraftDownloadTimeout()),
+		)
+
+		if err := client.Install(vanilla.WithVersion(installServerVersion), vanilla.ToDestinationFolder(installDestinationFolder)); err != nil {
 			err = fmt.Errorf("installing server: %w", err)
-			log.Fatalf("failed to install server: %v", err)
+			slog.Error("failed to install server: %v", err)
+			panic(err)
 		}
 	},
 }
 
 var (
-	installServerVersion string
+	installServerVersion     string
+	installDestinationFolder string
 )
 
 func init() {
 	rootCmd.AddCommand(installCmd)
 
 	installCmd.Flags().StringVar(&installServerVersion, "version", "latest", "Version of Java Edition server to install")
+	installCmd.Flags().StringVar(&installDestinationFolder, "dest", "/tmp/installations", "Installation root directory")
 
 	// Here you will define your flags and configuration settings.
 
