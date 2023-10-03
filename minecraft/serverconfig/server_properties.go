@@ -245,7 +245,7 @@ type ServerProperties struct {
 	// Comma-separated list of datapacks to be enabled during world creation. Feature packs need to be explicitly enabled.
 	// initial-enabled-packs
 	// type: string
-	// default: vanilla
+	// default: minecraft
 	InitialEnabledPacks string `properties:"initial-enabled-packs"`
 
 	// LevelName
@@ -272,7 +272,7 @@ type ServerProperties struct {
 	// type: string
 	// default: minecraft:normal
 	//
-	// Escaping ":" is required when using a world preset ID, and the vanilla world preset ID's namespace (minecraft:) can be omitted.
+	// Escaping ":" is required when using a world preset ID, and the minecraft world preset ID's namespace (minecraft:) can be omitted.
 	//
 	// minecraft:normal - Standard world with hills, valleys, water, etc.
 	// minecraft:flat - A flat world with no features, can be modified with generator-settings.

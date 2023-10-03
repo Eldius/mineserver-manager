@@ -1,12 +1,12 @@
-package vanilla
+package minecraft
 
 import (
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/java"
-	"github.com/eldius/mineserver-manager/vanilla/serverconfig"
-	"github.com/eldius/mineserver-manager/vanilla/versions"
+	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
+	"github.com/eldius/mineserver-manager/minecraft/versions"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -57,7 +57,7 @@ func (i *InstallService) Install(configs ...InstallCfg) error {
 	v, err := ver.GetVersion(cfg.VersionName)
 	if err != nil {
 		err = fmt.Errorf("getting version from online versions list for name '%s': %w", cfg.VersionName, err)
-		log.With("error", err).Error("Failed to get version for name %s", cfg.VersionName)
+		log.With("error", err, "version", cfg.VersionName).Error("Failed to get version for name")
 		return err
 	}
 

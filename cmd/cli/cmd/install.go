@@ -3,7 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/config"
-	"github.com/eldius/mineserver-manager/vanilla"
+	"github.com/eldius/mineserver-manager/minecraft"
 	"github.com/spf13/cobra"
 	"log/slog"
 )
@@ -19,12 +19,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		client := vanilla.NewInstallService(vanilla.WithTimeout(
+		client := minecraft.NewInstallService(minecraft.WithTimeout(
 			config.GetMinecraftApiTimeout()),
-			vanilla.WithDownloadTimeout(config.GetMinecraftDownloadTimeout()),
+			minecraft.WithDownloadTimeout(config.GetMinecraftDownloadTimeout()),
 		)
 
-		if err := client.Install(vanilla.WithVersion(installServerVersion), vanilla.ToDestinationFolder(installDestinationFolder)); err != nil {
+		if err := client.Install(minecraft.WithVersion(installServerVersion), minecraft.ToDestinationFolder(installDestinationFolder)); err != nil {
 			err = fmt.Errorf("installing server: %w", err)
 			slog.Error("failed to install server: %v", err)
 			panic(err)

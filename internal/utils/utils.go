@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"compress/gzip"
 	"crypto/sha1"
-	"errors"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"io"
@@ -85,7 +84,7 @@ func ValidateFileIntegrity(file, signature string) error {
 	fileSignature := fmt.Sprintf("%x", sum)
 	log.With("calculated", fileSignature, "original", signature).Info("FileChecksumValidation")
 	if fileSignature != signature {
-		return errors.New("file sign validation error")
+		return fmt.Errorf("file sign validation error: %w", fmt.Errorf("file sign: %s (expected: %s)", fileSignature, signature))
 	}
 
 	return nil

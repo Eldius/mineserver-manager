@@ -1,8 +1,8 @@
-package vanilla
+package minecraft
 
 import (
-	"github.com/eldius/mineserver-manager/vanilla/serverconfig"
-	"github.com/eldius/mineserver-manager/vanilla/versions"
+	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
+	"github.com/eldius/mineserver-manager/minecraft/versions"
 )
 
 type InstallConfig struct {

@@ -1,8 +1,7 @@
-package vanilla
+package minecraft
 
 import (
-	"github.com/eldius/mineserver-manager/vanilla/versions"
-	"github.com/h2non/gock"
+	"github.com/eldius/mineserver-manager/minecraft/versions"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"path/filepath"
@@ -12,17 +11,13 @@ import (
 
 func TestInstaller_DownloadServer(t *testing.T) {
 	t.Run("", func(t *testing.T) {
-		gock.New("https://piston-data.mojang.com").
-			Get("/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar").
-			Reply(200).
-			File("./versions/samples/versions.json")
-
 		c := NewInstallService(WithTimeout(1 * time.Second))
 
 		v := versions.VersionInfoResponse{
 			Downloads: versions.Downloads{
 				Server: versions.Artifact{
-					URL: "https://piston-data.mojang.com/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar",
+					URL:  "https://piston-data.mojang.com/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar",
+					SHA1: "15c777e2cfe0556eef19aab534b186c0c6f277e1",
 				},
 			},
 		}
