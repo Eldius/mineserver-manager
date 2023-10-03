@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/config"
+	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/minecraft"
 	"github.com/spf13/cobra"
 	"log/slog"
@@ -19,12 +20,17 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
+		logger.GetLogger().With("headless", installHeadless).Info("debugging")
 		client := minecraft.NewInstallService(minecraft.WithTimeout(
 			config.GetMinecraftApiTimeout()),
 			minecraft.WithDownloadTimeout(config.GetMinecraftDownloadTimeout()),
 		)
 
-		if err := client.Install(minecraft.WithVersion(installServerVersion), minecraft.ToDestinationFolder(installDestinationFolder)); err != nil {
+		if err := client.Install(
+			minecraft.WithVersion(installServerVersion),
+			minecraft.ToDestinationFolder(installDestinationFolder),
+			minecraft.WithHeadlessConfig(installHeadless),
+		); err != nil {
 			err = fmt.Errorf("installing server: %w", err)
 			slog.Error("failed to install server: %v", err)
 			panic(err)
@@ -35,13 +41,15 @@ to quickly create a Cobra application.`,
 var (
 	installServerVersion     string
 	installDestinationFolder string
+	installHeadless          bool
 )
 
 func init() {
 	rootCmd.AddCommand(installCmd)
 
 	installCmd.Flags().StringVar(&installServerVersion, "version", "latest", "Version of Java Edition server to install")
-	installCmd.Flags().StringVar(&installDestinationFolder, "dest", "/tmp/installations", "Installation root directory")
+	installCmd.Flags().StringVar(&installDestinationFolder, "dest", ".", "Installation root directory")
+	installCmd.Flags().BoolVar(&installHeadless, "headless", false, "Installation root directory")
 
 	// Here you will define your flags and configuration settings.
 

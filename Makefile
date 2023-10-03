@@ -2,5 +2,7 @@
 test:
 	go test ./... -cover
 
-run:
-	go run ./cmd/cli install
+install:
+	$(eval TMP := $(shell mktemp -d))
+	@echo "temp folder: $(TMP)"
+	go run ./cmd/cli install --dest $(TMP) --headless

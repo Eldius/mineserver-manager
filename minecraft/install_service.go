@@ -7,6 +7,7 @@ import (
 	"github.com/eldius/mineserver-manager/java"
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
 	"github.com/eldius/mineserver-manager/minecraft/versions"
+	"github.com/eldius/properties"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -40,7 +41,7 @@ func NewInstallService(configs ...InstallServiceOpt) *InstallService {
 }
 
 // Install installs selected version
-func (i *InstallService) Install(configs ...InstallCfg) error {
+func (i *InstallService) Install(configs ...InstallOpt) error {
 	cfg := installSetup(configs)
 
 	log := logger.GetLogger().With("action", "install_server", "version_name", cfg.VersionName)
@@ -70,6 +71,12 @@ func (i *InstallService) Install(configs ...InstallCfg) error {
 		return err
 	}
 
+	if err := i.CreateServerProperties(cfg); err != nil {
+		err = fmt.Errorf("creating server properties file: %w", err)
+		log.With("error", err).Error("Failed to create server properties file")
+		return err
+	}
+
 	sf, err := i.DownloadServer(*cfg.v, cfg.Dest)
 	if err != nil {
 		err = fmt.Errorf("downloading server file: %w", err)
@@ -91,11 +98,23 @@ func (i *InstallService) Install(configs ...InstallCfg) error {
 		log.Error("Failed to unpack JDK package: %v", err)
 		return err
 	}
+
+	if err := i.CreateStartScript(*cfg.Start, cfg.Dest); err != nil {
+		err = fmt.Errorf("creating start script: %w", err)
+		log.With("error", err).Error("Failed to create start script")
+		return err
+	}
+
+	if _, err := i.Eula(cfg.Dest); err != nil {
+		err = fmt.Errorf("creating eula.txt file: %w", err)
+		log.With("error", err).Error("Failed to create eula.txt file")
+		return err
+	}
 	return err
 }
 
-func installSetup(cfgs []InstallCfg) *InstallConfig {
-	cfg := &InstallConfig{
+func installSetup(cfgs []InstallOpt) *InstallOpts {
+	cfg := &InstallOpts{
 		Start:       serverconfig.GetDefaultScriptParams(),
 		SrvProps:    utils.Must(serverconfig.GetDefaultServerProperties()),
 		Dest:        "./minecraft",
@@ -124,8 +143,24 @@ func (i *InstallService) DownloadServer(v versions.VersionInfoResponse, dest str
 	return destFile, nil
 }
 
-// StartScript generates the start script
-func (i *InstallService) StartScript(s serverconfig.StartupParams, dest string) error {
+func (i *InstallService) CreateServerProperties(cfg *InstallOpts) error {
+	destFile := filepath.Join(cfg.Dest, "server.properties")
+	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		err = fmt.Errorf("creating server properties file: %w", err)
+		return err
+	}
+
+	if err := properties.NewEncoder(f).Encode(cfg.SrvProps); err != nil {
+		err = fmt.Errorf("encoding server properties content to file: %w", err)
+		return err
+	}
+
+	return nil
+}
+
+// CreateStartScript generates the start script
+func (i *InstallService) CreateStartScript(s serverconfig.StartupParams, dest string) error {
 	destFile := filepath.Join(dest, "start.sh")
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
@@ -145,6 +180,21 @@ func (i *InstallService) StartScript(s serverconfig.StartupParams, dest string) 
 		return err
 	}
 	return nil
+}
+
+func (i *InstallService) Eula(dest string) (string, error) {
+	eulaPath := filepath.Join(dest, "eula.txt")
+	f, err := os.Create(eulaPath)
+	if err != nil {
+		err = fmt.Errorf("creating eula file: %w", err)
+		return "", err
+	}
+	if err := properties.NewEncoder(f).Encode(serverconfig.DefaultEulaValue); err != nil {
+		err = fmt.Errorf("writing eula contents to file: %w", err)
+		return "", err
+	}
+
+	return eulaPath, nil
 }
 
 func (i *InstallService) httpInstaller() http.Client {
