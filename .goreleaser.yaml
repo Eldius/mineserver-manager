@@ -7,7 +7,7 @@ before:
     - make lint
 
 builds:
-  - id: cli
+  - id: mineserver-cli
     env:
       - CGO_ENABLED=0
     goos:
