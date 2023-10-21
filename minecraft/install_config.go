@@ -3,6 +3,7 @@ package minecraft
 import (
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
 	"github.com/eldius/mineserver-manager/minecraft/versions"
+	"path/filepath"
 )
 
 type InstallOpts struct {
@@ -11,6 +12,14 @@ type InstallOpts struct {
 	Dest        string
 	VersionName string
 	v           *versions.VersionInfoResponse
+}
+
+func (o InstallOpts) AbsoluteDestPath() string {
+	d, err := filepath.Abs(o.Dest)
+	if err != nil {
+		return o.Dest
+	}
+	return d
 }
 
 type InstallOpt func(*InstallOpts) *InstallOpts

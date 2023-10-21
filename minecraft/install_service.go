@@ -1,6 +1,7 @@
 package minecraft
 
 import (
+	"errors"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/internal/utils"
@@ -55,6 +56,14 @@ func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 
 	c := versions.NewClient(versions.WithTimeout(i.cfg.Timeout))
 
+	if err := os.MkdirAll(cfg.AbsoluteDestPath(), os.ModePerm); err != nil {
+		if !errors.Is(err, os.ErrExist) {
+			err = fmt.Errorf("creating destination folder: %w", err)
+			log.With("error", err).Error("Failed to create destination folder")
+		}
+		log.Debug("destination already exists")
+	}
+
 	ver, err := c.ListVersions()
 	if err != nil {
 		err = fmt.Errorf("getting available versions: %w", err)
@@ -84,7 +93,7 @@ func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 		return err
 	}
 
-	sf, err := i.DownloadServer(*cfg.v, cfg.Dest)
+	sf, err := i.DownloadServer(*cfg.v, cfg.AbsoluteDestPath())
 	if err != nil {
 		err = fmt.Errorf("downloading server file: %w", err)
 		log.With("error", err).Error("Failed to download server file")
@@ -100,19 +109,19 @@ func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 		return err
 	}
 
-	if err = utils.UnpackTarGZ(jdk, cfg.Dest); err != nil {
+	if err = utils.UnpackTarGZ(jdk, cfg.AbsoluteDestPath()); err != nil {
 		err = fmt.Errorf("unpacking jdk package: %w", err)
 		log.Error("Failed to unpack JDK package: %v", err)
 		return err
 	}
 
-	if err := i.CreateStartScript(*cfg.Start, cfg.Dest); err != nil {
+	if err := i.CreateStartScript(*cfg.Start, cfg.AbsoluteDestPath()); err != nil {
 		err = fmt.Errorf("creating start script: %w", err)
 		log.With("error", err).Error("Failed to create start script")
 		return err
 	}
 
-	if _, err := i.Eula(cfg.Dest); err != nil {
+	if _, err := i.Eula(cfg.AbsoluteDestPath()); err != nil {
 		err = fmt.Errorf("creating eula.txt file: %w", err)
 		log.With("error", err).Error("Failed to create eula.txt file")
 		return err
@@ -151,7 +160,7 @@ func (i *vanillaInstaller) DownloadServer(v versions.VersionInfoResponse, dest s
 }
 
 func (i *vanillaInstaller) CreateServerProperties(cfg *InstallOpts) error {
-	destFile := filepath.Join(cfg.Dest, "server.properties")
+	destFile := filepath.Join(cfg.AbsoluteDestPath(), "server.properties")
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		err = fmt.Errorf("creating server properties file: %w", err)

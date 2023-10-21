@@ -18,3 +18,7 @@ snapshot-local:
 
 release-local:
 	goreleaser release --clean --skip=publish
+
+put:
+	echo 'rm ~/.bin/mineserver' | sftp $(USER)@192.168.100.183
+	echo 'put ./dist/mineserver-cli_linux_arm64/mineserver .bin/' | sftp $(USER)@192.168.100.183
