@@ -8,7 +8,6 @@ import (
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
 	"github.com/eldius/mineserver-manager/minecraft/versions"
 	"github.com/eldius/properties"
-	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -23,25 +22,33 @@ type InstallServiceConfig struct {
 
 type InstallServiceOpt func(config *InstallServiceConfig) *InstallServiceConfig
 
-type InstallService struct {
+type Installer interface {
+	Install(configs ...InstallOpt) error
+	DownloadServer(v versions.VersionInfoResponse, dest string) (string, error)
+	CreateStartScript(s serverconfig.StartupParams, dest string) error
+	CreateServerProperties(cfg *InstallOpts) error
+	Eula(dest string) (string, error)
+}
+
+type vanillaInstaller struct {
 	cfg InstallServiceConfig
 }
 
 // NewInstallService creates a new client
-func NewInstallService(configs ...InstallServiceOpt) *InstallService {
+func NewInstallService(configs ...InstallServiceOpt) Installer {
 	cfg := &InstallServiceConfig{
 		Timeout: 30 * time.Second,
 	}
 	for _, c := range configs {
 		c(cfg)
 	}
-	return &InstallService{
+	return &vanillaInstaller{
 		cfg: *cfg,
 	}
 }
 
 // Install installs selected version
-func (i *InstallService) Install(configs ...InstallOpt) error {
+func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 	cfg := installSetup(configs)
 
 	log := logger.GetLogger().With("action", "install_server", "version_name", cfg.VersionName)
@@ -129,7 +136,7 @@ func installSetup(cfgs []InstallOpt) *InstallOpts {
 }
 
 // DownloadServer downloads server file
-func (i *InstallService) DownloadServer(v versions.VersionInfoResponse, dest string) (string, error) {
+func (i *vanillaInstaller) DownloadServer(v versions.VersionInfoResponse, dest string) (string, error) {
 	destFile := filepath.Join(dest, utils.GetFileName(v.Downloads.Server.URL))
 	if err := utils.DownloadFile(i.cfg.DownloadTimeout, v.Downloads.Server.URL, destFile); err != nil {
 		err = fmt.Errorf("getting version info: %w", err)
@@ -143,7 +150,7 @@ func (i *InstallService) DownloadServer(v versions.VersionInfoResponse, dest str
 	return destFile, nil
 }
 
-func (i *InstallService) CreateServerProperties(cfg *InstallOpts) error {
+func (i *vanillaInstaller) CreateServerProperties(cfg *InstallOpts) error {
 	destFile := filepath.Join(cfg.Dest, "server.properties")
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -160,7 +167,7 @@ func (i *InstallService) CreateServerProperties(cfg *InstallOpts) error {
 }
 
 // CreateStartScript generates the start script
-func (i *InstallService) CreateStartScript(s serverconfig.StartupParams, dest string) error {
+func (i *vanillaInstaller) CreateStartScript(s serverconfig.StartupParams, dest string) error {
 	destFile := filepath.Join(dest, "start.sh")
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
@@ -182,7 +189,7 @@ func (i *InstallService) CreateStartScript(s serverconfig.StartupParams, dest st
 	return nil
 }
 
-func (i *InstallService) Eula(dest string) (string, error) {
+func (i *vanillaInstaller) Eula(dest string) (string, error) {
 	eulaPath := filepath.Join(dest, "eula.txt")
 	f, err := os.Create(eulaPath)
 	if err != nil {
@@ -195,10 +202,6 @@ func (i *InstallService) Eula(dest string) (string, error) {
 	}
 
 	return eulaPath, nil
-}
-
-func (i *InstallService) httpInstaller() http.Client {
-	return http.Client{Timeout: i.cfg.Timeout}
 }
 
 func WithTimeout(t time.Duration) InstallServiceOpt {

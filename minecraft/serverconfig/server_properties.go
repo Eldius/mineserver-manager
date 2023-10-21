@@ -459,7 +459,7 @@ type ServerProperties struct {
 	// default: blank
 	//
 	// Set to blank, or the IP the player want their server to run (listen) on.
-	ServerIP string `properties: "server-ip"`
+	ServerIP string `properties:"server-ip"`
 
 	// Changes the port the server is hosting (listening) on. This port must be forwarded if the server is hosted in a network using NAT (if the player has a home router/firewall).
 	// server-port
@@ -473,7 +473,7 @@ type ServerProperties struct {
 	// default: 10
 	//
 	// 10 is the default/recommended. If the player has major lag, this value is recommended to be reduced.
-	SimulationDistance int `properties: "simulation-distance"`
+	SimulationDistance int `properties:"simulation-distance"`
 
 	// Sets whether the server sends snoop data regularly to http://snoop.minecraft.net.
 	// snooper-enabled

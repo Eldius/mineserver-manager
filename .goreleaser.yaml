@@ -1,0 +1,63 @@
+before:
+  hooks:
+    - go mod tidy
+    - go generate ./...
+    - go test ./... -cover
+    - make vulncheck
+    - make lint
+
+builds:
+  - id: cli
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+    binary: mineserver
+    main: ./cmd/cli
+    flags:
+      - -v
+      - -a
+    ldflags:
+      - -extldflags "-static"
+      - -X github.com/eldius/mineserver-manager/internal/config.BuildDate={{.Date}}
+      - -X github.com/eldius/mineserver-manager/internal/config.Version={{.Version}}
+      - -X github.com/eldius/mineserver-manager/internal/config.CommitDate={{.CommitDate}}
+      - -X github.com/eldius/mineserver-manager/internal/config.Commit={{.Commit}}
+    goarch:
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - "6"
+      - "7"
+
+archives:
+  - format: tar.gz
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- title .Version }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # use zip for windows archives
+    format_overrides:
+    - goos: windows
+      format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+
+# The lines beneath this are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
