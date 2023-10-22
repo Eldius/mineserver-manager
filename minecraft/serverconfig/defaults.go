@@ -15,6 +15,6 @@ func GetDefaultScriptParams() *StartupParams {
 	return &StartupParams{
 		Xmx:           "1g",
 		Xms:           "1g",
-		LogConfigFile: "",
+		LogConfigFile: true,
 	}
 }

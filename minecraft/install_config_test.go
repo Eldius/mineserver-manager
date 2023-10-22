@@ -26,7 +26,7 @@ func TestScriptParams_ToScript(t *testing.T) {
 		sp := &serverconfig.StartupParams{
 			Xmx:           "4g",
 			Xms:           "4g",
-			LogConfigFile: "log4j2.xml",
+			LogConfigFile: true,
 		}
 
 		s, err := sp.ToScript()
@@ -36,7 +36,7 @@ func TestScriptParams_ToScript(t *testing.T) {
 		assert.Contains(t, s, "-Xms4g")
 		assert.Contains(t, s, "-Xmx4g")
 		assert.Contains(t, s, "-jar server.jar")
-		assert.Contains(t, s, "-Dlog4j.configurationFile=log4j2.xml")
+		assert.Contains(t, s, "-Dlog4j.configurationFile=${INSTALL_PATH}/log4j2.xml")
 		assert.NotContains(t, s, "--nogui")
 	})
 

@@ -4,4 +4,10 @@ INSTALL_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 cd "${INSTALL_PATH}" || exit 1
 
-"${INSTALL_PATH}/jdk-17.0.7+7/bin/java" -Xms{{ .Xms }} -Xmx{{ .Xmx }} {{ if .LogConfigFile }}-Dlog4j.configurationFile={{ .LogConfigFile }}{{ end }} -jar server.jar {{ if .Headless }}--nogui{{ end }}
+"${INSTALL_PATH}/jdk-17.0.7+7/bin/java" -Xms{{ .Xms }} -Xmx{{ .Xmx }} {{ if .LogConfigFile }}-Dlog4j.configurationFile=${INSTALL_PATH}/log4j2.xml {{ end }} -jar server.jar {{ if .Headless }}--nogui{{ end }}
+
+# TODO draft script to start as a background process
+#"${INSTALL_PATH}/jdk-17.0.7+7/bin/java" -Xms{{ .Xms }} -Xmx{{ .Xmx }} {{ if .LogConfigFile }}-Dlog4j.configurationFile=${INSTALL_PATH}/log4j2.xml {{ end }} -jar server.jar {{ if .Headless }}--nogui{{ end }} &
+#PID=$!
+#echo $PID > server.pid
+#echo "starting server with PID: $PID"

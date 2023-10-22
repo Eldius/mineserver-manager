@@ -121,6 +121,14 @@ func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 		return err
 	}
 
+	if cfg.Start.LogConfigFile {
+		if err := i.CreateLoggingConfig(*cfg.Start, cfg.AbsoluteDestPath()); err != nil {
+			err = fmt.Errorf("generating log config file: %w", err)
+			log.With("error", err).Error("Failed to create log4j2.xml file")
+			return err
+		}
+	}
+
 	if _, err := i.Eula(cfg.AbsoluteDestPath()); err != nil {
 		err = fmt.Errorf("creating eula.txt file: %w", err)
 		log.With("error", err).Error("Failed to create eula.txt file")
@@ -193,6 +201,27 @@ func (i *vanillaInstaller) CreateStartScript(s serverconfig.StartupParams, dest 
 
 	if _, err := f.Write([]byte(scp)); err != nil {
 		err = fmt.Errorf("writing start script to file: %w", err)
+		return err
+	}
+	return nil
+}
+
+// CreateLoggingConfig generates log4j2.xml logging configuration file
+func (i *vanillaInstaller) CreateLoggingConfig(s serverconfig.StartupParams, dest string) error {
+	f, err := os.OpenFile(filepath.Join(dest, "log4j2.xml"), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		err = fmt.Errorf("creating server startup script: %w", err)
+		return err
+	}
+
+	logf, err := s.LoggingConfiguration(dest)
+	if err != nil {
+		err = fmt.Errorf("generating logging configuration file content: %w", err)
+		return err
+	}
+
+	if _, err := f.Write([]byte(logf)); err != nil {
+		err = fmt.Errorf("writing logging configuration file to file: %w", err)
 		return err
 	}
 	return nil

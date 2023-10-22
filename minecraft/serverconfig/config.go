@@ -25,7 +25,7 @@ type Eula struct {
 type StartupParams struct {
 	Xmx           string
 	Xms           string
-	LogConfigFile string
+	LogConfigFile bool
 	Headless      bool
 }
 
@@ -33,6 +33,16 @@ func (s StartupParams) ToScript() (string, error) {
 	var b bytes.Buffer
 	if err := tpl.ExecuteTemplate(&b, "start.sh", s); err != nil {
 		err = fmt.Errorf("generating start script: %w", err)
+		return "", err
+	}
+
+	return b.String(), nil
+}
+
+func (s StartupParams) LoggingConfiguration(installPath string) (string, error) {
+	var b bytes.Buffer
+	if err := tpl.ExecuteTemplate(&b, "log4j2.xml", installPath); err != nil {
+		err = fmt.Errorf("generating logging configuration file: %w", err)
 		return "", err
 	}
 
