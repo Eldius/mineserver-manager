@@ -20,8 +20,7 @@
     <Loggers>
         <Root level="info">
             <AppenderRef ref="rolling_server_log" />
-<!--            <AppenderRef ref="legacy_server_log" />-->
-<!--            <AppenderRef ref="console" />-->
+            <AppenderRef ref="console" />
         </Root>
     </Loggers>
 </Configuration>
