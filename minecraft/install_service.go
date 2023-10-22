@@ -24,10 +24,10 @@ type InstallServiceConfig struct {
 type InstallServiceOpt func(config *InstallServiceConfig) *InstallServiceConfig
 
 type Installer interface {
-	Install(configs ...InstallOpt) error
+	Install(configs ...serverconfig.InstanceOpt) error
 	DownloadServer(v versions.VersionInfoResponse, dest string) (string, error)
-	CreateStartScript(s serverconfig.StartupParams, dest string) error
-	CreateServerProperties(cfg *InstallOpts) error
+	CreateStartScript(s serverconfig.RuntimeParams, dest string) error
+	CreateServerProperties(cfg *serverconfig.InstanceOpts) error
 	Eula(dest string) (string, error)
 }
 
@@ -49,8 +49,8 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 }
 
 // Install installs selected version
-func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
-	cfg := installSetup(configs)
+func (i *vanillaInstaller) Install(configs ...serverconfig.InstanceOpt) error {
+	cfg := serverconfig.NewInstanceOpts(configs...)
 
 	log := logger.GetLogger().With("action", "install_server", "version_name", cfg.VersionName)
 
@@ -80,7 +80,7 @@ func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 
 	log = log.With("version", v.ID, "version_type", v.Type)
 
-	cfg.v, err = c.GetVersionInfo(*v)
+	cfg.VersionInfo, err = c.GetVersionInfo(*v)
 	if err != nil {
 		err = fmt.Errorf("getting version info for name '%s': %w", cfg.VersionName, err)
 		log.With("error", err).Error("Failed to fetch version info for '%s (%s)'", v.ID, cfg.VersionName)
@@ -93,7 +93,7 @@ func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 		return err
 	}
 
-	sf, err := i.DownloadServer(*cfg.v, cfg.AbsoluteDestPath())
+	sf, err := i.DownloadServer(*cfg.VersionInfo, cfg.AbsoluteDestPath())
 	if err != nil {
 		err = fmt.Errorf("downloading server file: %w", err)
 		log.With("error", err).Error("Failed to download server file")
@@ -102,7 +102,7 @@ func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 
 	log.With("server_file", sf).Debug("Dowloaded server file")
 
-	jdk, err := java.DownloadJDK(cfg.v.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout)
+	jdk, err := java.DownloadJDK(cfg.VersionInfo.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout)
 	if err != nil {
 		err = fmt.Errorf("downloading jdk package: %w", err)
 		log.With("error", err).Error("Failed to download jdk")
@@ -137,21 +137,6 @@ func (i *vanillaInstaller) Install(configs ...InstallOpt) error {
 	return err
 }
 
-func installSetup(cfgs []InstallOpt) *InstallOpts {
-	cfg := &InstallOpts{
-		Start:       serverconfig.GetDefaultScriptParams(),
-		SrvProps:    utils.Must(serverconfig.GetDefaultServerProperties()),
-		Dest:        "./minecraft",
-		VersionName: "latest",
-		v:           nil,
-	}
-
-	for _, c := range cfgs {
-		cfg = c(cfg)
-	}
-	return cfg
-}
-
 // DownloadServer downloads server file
 func (i *vanillaInstaller) DownloadServer(v versions.VersionInfoResponse, dest string) (string, error) {
 	destFile := filepath.Join(dest, utils.GetFileName(v.Downloads.Server.URL))
@@ -167,7 +152,7 @@ func (i *vanillaInstaller) DownloadServer(v versions.VersionInfoResponse, dest s
 	return destFile, nil
 }
 
-func (i *vanillaInstaller) CreateServerProperties(cfg *InstallOpts) error {
+func (i *vanillaInstaller) CreateServerProperties(cfg *serverconfig.InstanceOpts) error {
 	destFile := filepath.Join(cfg.AbsoluteDestPath(), "server.properties")
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -184,7 +169,7 @@ func (i *vanillaInstaller) CreateServerProperties(cfg *InstallOpts) error {
 }
 
 // CreateStartScript generates the start script
-func (i *vanillaInstaller) CreateStartScript(s serverconfig.StartupParams, dest string) error {
+func (i *vanillaInstaller) CreateStartScript(s serverconfig.RuntimeParams, dest string) error {
 	destFile := filepath.Join(dest, "start.sh")
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
@@ -207,7 +192,7 @@ func (i *vanillaInstaller) CreateStartScript(s serverconfig.StartupParams, dest 
 }
 
 // CreateLoggingConfig generates log4j2.xml logging configuration file
-func (i *vanillaInstaller) CreateLoggingConfig(s serverconfig.StartupParams, dest string) error {
+func (i *vanillaInstaller) CreateLoggingConfig(s serverconfig.RuntimeParams, dest string) error {
 	f, err := os.OpenFile(filepath.Join(dest, "log4j2.xml"), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		err = fmt.Errorf("creating server startup script: %w", err)

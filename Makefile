@@ -1,5 +1,6 @@
 
 test:
+	go clean -cache
 	go test ./... -cover
 
 install:

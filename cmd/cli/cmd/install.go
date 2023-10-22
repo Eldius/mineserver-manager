@@ -5,6 +5,7 @@ import (
 	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/minecraft"
+	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
 	"github.com/spf13/cobra"
 	"log/slog"
 )
@@ -27,9 +28,9 @@ to quickly create a Cobra application.`,
 		)
 
 		if err := client.Install(
-			minecraft.WithVersion(installServerVersion),
-			minecraft.ToDestinationFolder(installDestinationFolder),
-			minecraft.WithHeadlessConfig(installHeadless),
+			serverconfig.WithVersion(installServerVersion),
+			serverconfig.ToDestinationFolder(installDestinationFolder),
+			serverconfig.WithHeadlessConfig(installHeadless),
 		); err != nil {
 			err = fmt.Errorf("installing server: %w", err)
 			slog.Error("failed to install server: %v", err)

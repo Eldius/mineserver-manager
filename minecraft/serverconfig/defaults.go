@@ -11,8 +11,8 @@ var (
 	DefaultEulaValue = &Eula{Eula: true}
 )
 
-func GetDefaultScriptParams() *StartupParams {
-	return &StartupParams{
+func GetDefaultScriptParams() *RuntimeParams {
+	return &RuntimeParams{
 		Xmx:           "1g",
 		Xms:           "1g",
 		LogConfigFile: true,

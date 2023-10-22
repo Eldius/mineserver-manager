@@ -10,12 +10,26 @@
         </Console>
 
         <RollingFile name="rolling_server_log" fileName="{{ . }}/server.log"
-                     filePattern="{{ . }}/server_%d{yyyy-MM-dd-HH}.log">
+                     filePattern="{{ . }}/server_%d{yyyy-MM-dd-HH}.log.gz">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} [%level] %msg%n" />
             <Policies>
                 <TimeBasedTriggeringPolicy />
             </Policies>
         </RollingFile>
+
+<!-- // TODO pending add custom Java dependencies to runtime -->
+<!--        <Console name="console_json" target="SYSTEM_OUT">-->
+<!--            <JsonLayout complete="false" compact="false">-->
+<!--                <KeyValuePair key="hostname" value="${hostName}" />-->
+<!--            </JsonLayout>-->
+<!--        </Console>-->
+<!--        <RollingFile name="rolling_server_log_json" fileName="{{ . }}/server.json"-->
+<!--                     filePattern="{{ . }}/server_%d{yyyy-MM-dd-HH}.json.gz">-->
+<!--            <JsonLayout complete="false" compact="false">-->
+<!--                <KeyValuePair key="hostname" value="${hostName}" />-->
+<!--            </JsonLayout>-->
+<!--        </RollingFile>-->
+
     </Appenders>
     <Loggers>
         <Root level="info">
