@@ -1,10 +1,9 @@
-/*
-Copyright © 2023 NAME HERE <EMAIL ADDRESS>
-*/
 package cmd
 
 import (
+	"fmt"
 	"github.com/eldius/mineserver-manager/internal/config"
+	"github.com/spf13/viper"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -38,13 +37,17 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (defaults to $HOME/.mineserver/config.yaml)")
 
-	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.mineserver-manager.yaml)")
+	rootCmd.PersistentFlags().Bool("debug", false, "Enable debug log")
+	if err := viper.BindPFlag(config.AppDebugModePropKey, rootCmd.PersistentFlags().Lookup("debug")); err != nil {
+		err = fmt.Errorf("binding debug mode property key: %w", err)
+		panic(err)
+	}
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().String("home", config.AppHomeDefaultValue, "Define app's home folder (defaults to $HOME/.mineserver)")
+	if err := viper.BindPFlag(config.AppHomePathPropKey, rootCmd.PersistentFlags().Lookup("home")); err != nil {
+		err = fmt.Errorf("binding debug mode property key: %w", err)
+		panic(err)
+	}
 }

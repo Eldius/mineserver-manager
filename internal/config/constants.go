@@ -1,6 +1,13 @@
 package config
 
 const (
-	minecraftDownloadTimeoutPropKey = "minecraft.download.timeout"
-	minecraftApiTimeoutPropKey      = "minecraft.api.timeout"
+	AppInstallDownloadTimeoutPropKey = "install.download.timeout"
+	AppMinecraftAPITimeoutPropKey    = "minecraft.api.timeout"
+
+	AppHomePathPropKey    = "app.home.path"
+	AppInstallPathPropKey = "app.install.path"
+	AppRequestLogPropKey  = "app.request.log"
+	AppDebugModePropKey   = "app.debugmode"
+
+	AppHomeDefaultValue = "~/.mineserver"
 )

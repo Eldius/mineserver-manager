@@ -24,10 +24,10 @@ type InstallServiceConfig struct {
 type InstallServiceOpt func(config *InstallServiceConfig) *InstallServiceConfig
 
 type Installer interface {
-	Install(configs ...serverconfig.InstanceOpt) error
+	Install(configs ...serverconfig.InstallOpt) error
 	DownloadServer(v versions.VersionInfoResponse, dest string) (string, error)
 	CreateStartScript(s serverconfig.RuntimeParams, dest string) error
-	CreateServerProperties(cfg *serverconfig.InstanceOpts) error
+	CreateServerProperties(cfg *serverconfig.InstallOpts) error
 	Eula(dest string) (string, error)
 }
 
@@ -49,8 +49,8 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 }
 
 // Install installs selected version
-func (i *vanillaInstaller) Install(configs ...serverconfig.InstanceOpt) error {
-	cfg := serverconfig.NewInstanceOpts(configs...)
+func (i *vanillaInstaller) Install(configs ...serverconfig.InstallOpt) error {
+	cfg := serverconfig.NewInstallOpts(configs...)
 
 	log := logger.GetLogger().With("action", "install_server", "version_name", cfg.VersionName)
 
@@ -152,7 +152,7 @@ func (i *vanillaInstaller) DownloadServer(v versions.VersionInfoResponse, dest s
 	return destFile, nil
 }
 
-func (i *vanillaInstaller) CreateServerProperties(cfg *serverconfig.InstanceOpts) error {
+func (i *vanillaInstaller) CreateServerProperties(cfg *serverconfig.InstallOpts) error {
 	destFile := filepath.Join(cfg.AbsoluteDestPath(), "server.properties")
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {

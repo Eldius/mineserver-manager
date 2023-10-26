@@ -6,9 +6,13 @@ import (
 )
 
 func GetMinecraftDownloadTimeout() time.Duration {
-	return viper.GetDuration(minecraftDownloadTimeoutPropKey)
+	return viper.GetDuration(AppInstallDownloadTimeoutPropKey)
 }
 
 func GetMinecraftApiTimeout() time.Duration {
-	return viper.GetDuration(minecraftApiTimeoutPropKey)
+	return viper.GetDuration(AppMinecraftAPITimeoutPropKey)
+}
+
+func GetAppHomePath() string {
+	return viper.GetString(AppHomePathPropKey)
 }

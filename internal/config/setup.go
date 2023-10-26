@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/mitchellh/go-homedir"
 	"os"
-	"path/filepath"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -25,7 +24,7 @@ func Setup(cfgFile string) {
 
 		// Search config in home directory with name ".mqtt-listener-go" (without extension).
 		viper.AddConfigPath(home)
-		viper.AddConfigPath(filepath.Join(home, ".mineserver"))
+		viper.AddConfigPath(AppHomeDefaultValue)
 		viper.SetConfigName("config")
 		viper.SetConfigType("yaml")
 		viper.SetConfigType("yml")
@@ -47,9 +46,10 @@ func Setup(cfgFile string) {
 SetDefaults sets default configuration values
 */
 func SetDefaults() {
-	viper.SetDefault(minecraftApiTimeoutPropKey, "10s")
-	viper.SetDefault(minecraftDownloadTimeoutPropKey, "300s")
-	viper.SetDefault("app.devmode", false)
-	viper.SetDefault("app.request.log", false)
-	viper.SetDefault("app.install.path", "./.tmp")
+	viper.SetDefault(AppMinecraftAPITimeoutPropKey, "10s")
+	viper.SetDefault(AppInstallDownloadTimeoutPropKey, "300s")
+	viper.SetDefault(AppDebugModePropKey, false)
+	viper.SetDefault(AppRequestLogPropKey, false)
+	viper.SetDefault(AppInstallPathPropKey, "./.tmp")
+	viper.SetDefault(AppHomePathPropKey, AppHomeDefaultValue)
 }

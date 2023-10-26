@@ -7,7 +7,9 @@ import (
 	"github.com/eldius/mineserver-manager/minecraft"
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"log/slog"
+	"time"
 )
 
 // installCmd represents the install command
@@ -52,13 +54,9 @@ func init() {
 	installCmd.Flags().StringVar(&installDestinationFolder, "dest", ".", "Installation root directory")
 	installCmd.Flags().BoolVar(&installHeadless, "headless", false, "Installation root directory")
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// installCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// installCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	installCmd.Flags().Duration("download-timeout", 300*time.Second, "Download timeout configuration (defaults to 300s/5m)")
+	if err := viper.BindPFlag(config.AppInstallDownloadTimeoutPropKey, installCmd.Flags().Lookup("download-timeout")); err != nil {
+		err = fmt.Errorf("binding artifact download timeout property: %w", err)
+		panic(err)
+	}
 }
