@@ -22,8 +22,21 @@ pipelines:
           image: golangci/golangci-lint:v1.55.0
           script:
             - go install golang.org/x/vuln/cmd/govulncheck@latest
-  # tags:
-    # v*:
-      # - step:
-          # script:
-            # - go install github.com/goreleaser/goreleaser@latest
+
+
+  tags:
+    v*:
+      - step:
+          script:
+            - go install github.com/goreleaser/goreleaser@latest
+            - goreleaser release
+
+      - pipe: atlassian/bitbucket-upload-file:0.6.0
+        variables:
+          FILENAME: dist/mineserver-manager_*
+          # BITBUCKET_USERNAME: "<string>" # Optional
+          # BITBUCKET_APP_PASSWORD: "<string>" # Optional
+          BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+          # ACCOUNT: '<string>' # Optional
+          # REPOSITORY: '<string>' # Optional
+          DEBUG: '<boolean>' # Optional
