@@ -27,12 +27,12 @@ definitions:
           - go install github.com/goreleaser/goreleaser@latest
           - goreleaser release --skip=publish
 
-    - step: &publish
-      pipe: atlassian/bitbucket-upload-file:0.6.0
-      variables:
-        FILENAME: dist/mineserver-manager_*
-        BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
-        DEBUG: true
+#    - step: &publish
+#      pipe: atlassian/bitbucket-upload-file:0.6.0
+#      variables:
+#        FILENAME: dist/mineserver-manager_*
+#        BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+#        DEBUG: true
 
 pipelines:
   default:
@@ -47,4 +47,4 @@ pipelines:
       - step: *lint
       - step: *vulncheck
       - step: *release
-      - step: *publish
+#      - step: *publish
