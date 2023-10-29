@@ -5,38 +5,46 @@
 
 image: golang:1.21
 
+definitions:
+  steps:
+    - step: &test
+        name: Build and test
+        script:
+          - go test ./... -cover
+    - step: &lint
+        name: Lint code
+        image: golangci/golangci-lint:v1.55.0
+        script:
+          - golangci-lint run -v
+    - step: &vulncheck
+        name: Vulnerabiliy check
+        image: golangci/golangci-lint:v1.55.0
+        script:
+          - go install golang.org/x/vuln/cmd/govulncheck@latest
+          - govulncheck ./...
+    - step: &release
+        script:
+          - go install github.com/goreleaser/goreleaser@latest
+          - goreleaser release --skip=publish
+
+    - step: &publish
+      pipe: atlassian/bitbucket-upload-file:0.6.0
+      variables:
+        FILENAME: dist/mineserver-manager_*
+        BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+        DEBUG: true
+
 pipelines:
   default:
     - parallel:
-        - step:
-            name: Test
-            script:
-              - go test ./... -cover
-        - step:
-            name: Lint code
-            image: golangci/golangci-lint:v1.55.0
-            script:
-              - golangci-lint run -v
-        - step:
-            name: Vulnerabiliy check
-            image: golangci/golangci-lint:v1.55.0
-            script:
-              - go install golang.org/x/vuln/cmd/govulncheck@latest
-              - govulncheck ./...
+        - step: *test
+        - step: *lint
+        - step: *vulncheck
 
   tags:
-    v*:
-      - step:
-          script:
-            - go install github.com/goreleaser/goreleaser@latest
-            - goreleaser release
-
-#      - pipe: atlassian/bitbucket-upload-file:0.6.0
-#        variables:
-#          FILENAME: dist/mineserver-manager_*
-#          # BITBUCKET_USERNAME: "<string>" # Optional
-#          # BITBUCKET_APP_PASSWORD: "<string>" # Optional
-#          BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
-#          # ACCOUNT: '<string>' # Optional
-#          # REPOSITORY: '<string>' # Optional
-#          DEBUG: '<boolean>' # Optional
+    'v*':
+      - step: *test
+      - step: *lint
+      - step: *vulncheck
+      - step: *release
+      - step: *publish
