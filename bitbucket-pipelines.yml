@@ -49,7 +49,6 @@ pipelines:
 
   tags:
     'v*':
-      - parallel:
       - step: *release
       - step: *publish
 
