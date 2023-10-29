@@ -32,13 +32,18 @@ definitions:
           - go install golang.org/x/vuln/cmd/govulncheck@latest
           - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.0
           - goreleaser release --skip=publish
+          - pipe: atlassian/bitbucket-upload-file:0.6.0
+            variables:
+              FILENAME: dist/mineserver-manager_*
+              BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+              DEBUG: true
 
-    - step: &publish
-      pipe: atlassian/bitbucket-upload-file:0.6.0
-      variables:
-        FILENAME: dist/mineserver-manager_*
-        BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
-        DEBUG: true
+#    - step: &publish
+#      pipe: atlassian/bitbucket-upload-file:0.6.0
+#      variables:
+#        FILENAME: dist/mineserver-manager_*
+#        BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+#        DEBUG: true
 
 pipelines:
   default:
@@ -50,8 +55,3 @@ pipelines:
   tags:
     'v*':
       - step: *release
-      - pipe: atlassian/bitbucket-upload-file:0.6.0
-        variables:
-          - FILENAME: dist/mineserver-manager_*
-          - BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
-          - DEBUG: true
