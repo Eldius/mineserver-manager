@@ -8,7 +8,7 @@ image: golang:1.21
 definitions:
   steps:
     - step: &test
-        name: Build and test
+        name: Test code
         script:
           - go test ./... -cover
     - step: &lint
@@ -23,16 +23,22 @@ definitions:
           - go install golang.org/x/vuln/cmd/govulncheck@latest
           - govulncheck ./...
     - step: &release
+        name: Release artifact
+        artifacts:
+          - dist/*.tar.gz
+          - dist/*.zip
         script:
           - go install github.com/goreleaser/goreleaser@latest
+          - go install golang.org/x/vuln/cmd/govulncheck@latest
+          - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.0
           - goreleaser release --skip=publish
 
-#    - step: &publish
-#      pipe: atlassian/bitbucket-upload-file:0.6.0
-#      variables:
-#        FILENAME: dist/mineserver-manager_*
-#        BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
-#        DEBUG: true
+    - step: &publish
+      pipe: atlassian/bitbucket-upload-file:0.6.0
+      variables:
+        FILENAME: dist/mineserver-manager_*
+        BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+        DEBUG: true
 
 pipelines:
   default:
@@ -43,8 +49,7 @@ pipelines:
 
   tags:
     'v*':
-      - step: *test
-      - step: *lint
-      - step: *vulncheck
+      - parallel:
       - step: *release
-#      - step: *publish
+      - step: *publish
+
