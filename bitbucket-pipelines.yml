@@ -50,5 +50,9 @@ pipelines:
   tags:
     'v*':
       - step: *release
-      - step: *publish
+      - pipe: atlassian/bitbucket-upload-file:0.6.0
+        variables:
+          FILENAME: dist/mineserver-manager_*
+          BITBUCKET_ACCESS_TOKEN: $BITBUCKET_ACCESS_TOKEN
+          DEBUG: true
 
