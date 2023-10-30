@@ -7,7 +7,7 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 	"io"
 	"log/slog"
 	"net/http"
@@ -185,7 +185,7 @@ func HTTPClient(t time.Duration) http.Client {
 
 func PasswordPrompt() (string, error) {
 	fmt.Print("Enter Password: ")
-	bytePassword, err := terminal.ReadPassword(0)
+	bytePassword, err := term.ReadPassword(0)
 	if err != nil {
 		err = fmt.Errorf("password prompt: %w", err)
 		return "", err
