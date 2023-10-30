@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/eldius/mineserver-manager/internal/utils"
 	"net/http"
 	"time"
 )
@@ -93,7 +94,7 @@ func (c *apiClient) GetVersionInfo(ctx context.Context, v Version) (*VersionInfo
 }
 
 func (c *apiClient) httpClient() http.Client {
-	return http.Client{Timeout: c.cfg.Timeout}
+	return utils.HTTPClient(c.cfg.Timeout)
 }
 
 func WithTimeout(d time.Duration) ClientOpt {

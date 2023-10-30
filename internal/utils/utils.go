@@ -26,7 +26,7 @@ func GetFileName(u string) string {
 }
 
 func DownloadFile(ctx context.Context, timeout time.Duration, u, destFile string) error {
-	c := http.Client{Timeout: timeout}
+	c := HTTPClient(timeout)
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
 	if err != nil {
 		err = fmt.Errorf("creating versions query request: %w", err)
@@ -172,4 +172,11 @@ func UnpackTarGZ(ctx context.Context, file, destDir string) error {
 		}
 	}
 	return nil
+}
+
+// HTTPClient returns a new HTTP client
+func HTTPClient(t time.Duration) http.Client {
+	return http.Client{
+		Timeout: t,
+	}
 }
