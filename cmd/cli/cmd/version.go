@@ -8,8 +8,8 @@ import (
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Shows version information",
-	Long:  `Shows version information.`,
+	Short: "Shows CLI version information",
+	Long:  `Shows CLI version information.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		config.VersionInfo()
 	},

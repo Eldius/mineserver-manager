@@ -1,6 +1,7 @@
 package minecraft
 
 import (
+	"context"
 	"github.com/eldius/mineserver-manager/minecraft/versions"
 	"github.com/h2non/gock"
 	"github.com/stretchr/testify/assert"
@@ -22,6 +23,8 @@ func TestInstaller_DownloadServer(t *testing.T) {
 			Reply(200).
 			File("./versions/samples/server.zip")
 
+		ctx := context.Background()
+
 		c := NewInstallService(WithTimeout(1 * time.Second))
 
 		v := versions.VersionInfoResponse{
@@ -34,7 +37,7 @@ func TestInstaller_DownloadServer(t *testing.T) {
 		}
 		dest, err := os.MkdirTemp(os.TempDir(), "mine-test-*")
 		assert.Nil(t, err)
-		serverFile, err := c.DownloadServer(v, dest)
+		serverFile, err := c.DownloadServer(ctx, v, dest)
 		assert.Nil(t, err)
 		assert.Equal(t, filepath.Join(dest, "server.jar"), serverFile)
 

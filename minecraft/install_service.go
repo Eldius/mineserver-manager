@@ -1,6 +1,7 @@
 package minecraft
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
@@ -24,8 +25,8 @@ type InstallServiceConfig struct {
 type InstallServiceOpt func(config *InstallServiceConfig) *InstallServiceConfig
 
 type Installer interface {
-	Install(configs ...serverconfig.InstallOpt) error
-	DownloadServer(v versions.VersionInfoResponse, dest string) (string, error)
+	Install(ctx context.Context, configs ...serverconfig.InstallOpt) error
+	DownloadServer(ctx context.Context, v versions.VersionInfoResponse, dest string) (string, error)
 	CreateStartScript(s serverconfig.RuntimeParams, dest string) error
 	CreateServerProperties(cfg *serverconfig.InstallOpts) error
 	Eula(dest string) (string, error)
@@ -49,7 +50,7 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 }
 
 // Install installs selected version
-func (i *vanillaInstaller) Install(configs ...serverconfig.InstallOpt) error {
+func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.InstallOpt) error {
 	cfg := serverconfig.NewInstallOpts(configs...)
 
 	log := logger.GetLogger().With("action", "install_server", "version_name", cfg.VersionName)
@@ -59,7 +60,7 @@ func (i *vanillaInstaller) Install(configs ...serverconfig.InstallOpt) error {
 	if err := os.MkdirAll(cfg.AbsoluteDestPath(), os.ModePerm); err != nil {
 		if !errors.Is(err, os.ErrExist) {
 			err = fmt.Errorf("creating destination folder: %w", err)
-			log.With("error", err).Error("Failed to create destination folder")
+			log.With("error", err).ErrorContext(ctx, "Failed to create destination folder")
 		}
 		log.Debug("destination already exists")
 	}
@@ -67,14 +68,14 @@ func (i *vanillaInstaller) Install(configs ...serverconfig.InstallOpt) error {
 	ver, err := c.ListVersions()
 	if err != nil {
 		err = fmt.Errorf("getting available versions: %w", err)
-		log.With("error", err).Error("Failed to list available versions")
+		log.With("error", err).ErrorContext(ctx, "Failed to list available versions")
 		return err
 	}
 
 	v, err := ver.GetVersion(cfg.VersionName)
 	if err != nil {
 		err = fmt.Errorf("getting version from online versions list for name '%s': %w", cfg.VersionName, err)
-		log.With("error", err, "version", cfg.VersionName).Error("Failed to get version for name")
+		log.With("error", err, "version", cfg.VersionName).ErrorContext(ctx, "Failed to get version for name")
 		return err
 	}
 
@@ -83,69 +84,69 @@ func (i *vanillaInstaller) Install(configs ...serverconfig.InstallOpt) error {
 	cfg.VersionInfo, err = c.GetVersionInfo(*v)
 	if err != nil {
 		err = fmt.Errorf("getting version info for name '%s': %w", cfg.VersionName, err)
-		log.With("error", err).Error("Failed to fetch version info for '%s (%s)'", v.ID, cfg.VersionName)
+		log.With("error", err).ErrorContext(ctx, "Failed to fetch version info for '%s (%s)'", v.ID, cfg.VersionName)
 		return err
 	}
 
 	if err := i.CreateServerProperties(cfg); err != nil {
 		err = fmt.Errorf("creating server properties file: %w", err)
-		log.With("error", err).Error("Failed to create server properties file")
+		log.With("error", err).ErrorContext(ctx, "Failed to create server properties file")
 		return err
 	}
 
-	sf, err := i.DownloadServer(*cfg.VersionInfo, cfg.AbsoluteDestPath())
+	sf, err := i.DownloadServer(ctx, *cfg.VersionInfo, cfg.AbsoluteDestPath())
 	if err != nil {
 		err = fmt.Errorf("downloading server file: %w", err)
-		log.With("error", err).Error("Failed to download server file")
+		log.With("error", err).ErrorContext(ctx, "Failed to download server file")
 		return err
 	}
 
-	log.With("server_file", sf).Debug("Dowloaded server file")
+	log.With("server_file", sf).DebugContext(ctx, "Dowloaded server file")
 
-	jdk, err := java.DownloadJDK(cfg.VersionInfo.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout)
+	jdk, err := java.DownloadJDK(ctx, cfg.VersionInfo.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout)
 	if err != nil {
 		err = fmt.Errorf("downloading jdk package: %w", err)
-		log.With("error", err).Error("Failed to download jdk")
+		log.With("error", err).ErrorContext(ctx, "Failed to download jdk")
 		return err
 	}
 
-	if err = utils.UnpackTarGZ(jdk, cfg.AbsoluteDestPath()); err != nil {
+	if err = utils.UnpackTarGZ(ctx, jdk, cfg.AbsoluteDestPath()); err != nil {
 		err = fmt.Errorf("unpacking jdk package: %w", err)
-		log.Error("Failed to unpack JDK package: %v", err)
+		log.ErrorContext(ctx, "Failed to unpack JDK package: %v", err)
 		return err
 	}
 
 	if err := i.CreateStartScript(*cfg.Start, cfg.AbsoluteDestPath()); err != nil {
 		err = fmt.Errorf("creating start script: %w", err)
-		log.With("error", err).Error("Failed to create start script")
+		log.With("error", err).ErrorContext(ctx, "Failed to create start script")
 		return err
 	}
 
 	if cfg.Start.LogConfigFile {
 		if err := i.CreateLoggingConfig(*cfg.Start, cfg.AbsoluteDestPath()); err != nil {
 			err = fmt.Errorf("generating log config file: %w", err)
-			log.With("error", err).Error("Failed to create log4j2.xml file")
+			log.With("error", err).ErrorContext(ctx, "Failed to create log4j2.xml file")
 			return err
 		}
 	}
 
 	if _, err := i.Eula(cfg.AbsoluteDestPath()); err != nil {
 		err = fmt.Errorf("creating eula.txt file: %w", err)
-		log.With("error", err).Error("Failed to create eula.txt file")
+		log.With("error", err).ErrorContext(ctx, "Failed to create eula.txt file")
 		return err
 	}
 	return err
 }
 
 // DownloadServer downloads server file
-func (i *vanillaInstaller) DownloadServer(v versions.VersionInfoResponse, dest string) (string, error) {
+func (i *vanillaInstaller) DownloadServer(ctx context.Context, v versions.VersionInfoResponse, dest string) (string, error) {
 	destFile := filepath.Join(dest, utils.GetFileName(v.Downloads.Server.URL))
-	if err := utils.DownloadFile(i.cfg.DownloadTimeout, v.Downloads.Server.URL, destFile); err != nil {
+	if err := utils.DownloadFile(ctx, i.cfg.DownloadTimeout, v.Downloads.Server.URL, destFile); err != nil {
 		err = fmt.Errorf("getting version info: %w", err)
 		return "", err
 	}
 
-	if err := utils.ValidateFileIntegrity(destFile, v.Downloads.Server.SHA1); err != nil {
+	if err := utils.ValidateFileIntegrity(ctx, destFile, v.Downloads.Server.SHA1); err != nil {
 		return "", err
 	}
 

@@ -3,6 +3,7 @@ package utils
 import (
 	"archive/tar"
 	"compress/gzip"
+	"context"
 	"crypto/sha1"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
@@ -24,9 +25,14 @@ func GetFileName(u string) string {
 	return filepath.Base(p.Path)
 }
 
-func DownloadFile(timeout time.Duration, u, destFile string) error {
+func DownloadFile(ctx context.Context, timeout time.Duration, u, destFile string) error {
 	c := http.Client{Timeout: timeout}
-	res, err := c.Get(u)
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
+	if err != nil {
+		err = fmt.Errorf("creating versions query request: %w", err)
+		return err
+	}
+	res, err := c.Do(r)
 	if err != nil {
 		err = fmt.Errorf("getting version info: %w", err)
 		return err
@@ -66,7 +72,7 @@ func Must[T any](obj T, err error) T {
 }
 
 // ValidateFileIntegrity validates down
-func ValidateFileIntegrity(file, signature string) error {
+func ValidateFileIntegrity(ctx context.Context, file, signature string) error {
 	log := logger.GetLogger()
 	in, err := os.Open(file)
 	if err != nil {
@@ -82,7 +88,7 @@ func ValidateFileIntegrity(file, signature string) error {
 	sum := hash.Sum(make([]byte, 0))
 
 	fileSignature := fmt.Sprintf("%x", sum)
-	log.With("calculated", fileSignature, "original", signature).Info("FileChecksumValidation")
+	log.With("calculated", fileSignature, "original", signature).InfoContext(ctx, "FileChecksumValidation")
 	if fileSignature != signature {
 		return fmt.Errorf("file sign validation error: %w", fmt.Errorf("file sign: %s (expected: %s)", fileSignature, signature))
 	}
@@ -91,12 +97,12 @@ func ValidateFileIntegrity(file, signature string) error {
 }
 
 // UnpackTarGZ unpacks .tar.gz file to destDir
-func UnpackTarGZ(file, destDir string) error {
+func UnpackTarGZ(ctx context.Context, file, destDir string) error {
 	log := logger.GetLogger().With("action", "unpack", "file", file, "dest", destDir)
 	log.Info("File '%s' unpacked to '%s'", file, destDir)
 	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
 		err = fmt.Errorf("creating installation base path: %w", err)
-		log.With("error", err).Error("Failed to create destination directory")
+		log.With("error", err).ErrorContext(ctx, "Failed to create destination directory")
 		return err
 	}
 	f, err := os.Open(file)
@@ -111,7 +117,7 @@ func UnpackTarGZ(file, destDir string) error {
 	gzf, err := gzip.NewReader(f)
 	if err != nil {
 		err = fmt.Errorf("reading package file: %w", err)
-		log.With("error", err).Error("Failed open package file")
+		log.With("error", err).ErrorContext(ctx, "Failed open package file")
 		return err
 	}
 
@@ -123,7 +129,7 @@ func UnpackTarGZ(file, destDir string) error {
 		}
 		if err != nil {
 			err = fmt.Errorf("reading next file in package: %w", err)
-			log.With("error", err).Error("Failed to get next file in package")
+			log.With("error", err).ErrorContext(ctx, "Failed to get next file in package")
 			return err
 		}
 
@@ -135,7 +141,7 @@ func UnpackTarGZ(file, destDir string) error {
 			fmt.Printf("  -> Creating folder %s\n", dest)
 			if err := os.MkdirAll(dest, os.ModePerm); err != nil {
 				err = fmt.Errorf("failed to create subdirectory for new file: %w", err)
-				log.Error("Failed to create folder %s: %v", dest, err)
+				log.ErrorContext(ctx, "Failed to create folder %s: %v", dest, err)
 				return err
 			}
 		case tar.TypeReg:
@@ -148,16 +154,16 @@ func UnpackTarGZ(file, destDir string) error {
 			f, err := os.OpenFile(dest, os.O_CREATE|os.O_APPEND|os.O_RDWR, os.ModePerm)
 			if err != nil {
 				err = fmt.Errorf("creating dest file for '%s': %w", name, err)
-				log.Error("Failed to create file %s: %v\n", dest, err)
+				log.ErrorContext(ctx, "Failed to create file %s: %v\n", dest, err)
 			}
 			_, err = io.Copy(f, tarReader)
 			if err != nil {
 				err = fmt.Errorf("writing content to destination file: %w", err)
-				log.Error("Failed to write to file %s: %v\n", dest, err)
+				log.ErrorContext(ctx, "Failed to write to file %s: %v\n", dest, err)
 				return err
 			}
 		default:
-			slog.Warn("%s : %c %s %s",
+			slog.WarnContext(ctx, "%s : %c %s %s",
 				"Yikes! Unable to figure out type",
 				header.Typeflag,
 				"in file",

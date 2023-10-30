@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/logger"
@@ -12,24 +13,20 @@ import (
 	"time"
 )
 
-// installCmd represents the install command
+// installCmd installs a minecraft server instance
 var installCmd = &cobra.Command{
 	Use:   "install",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Short: "Installs a Minecraft server instance",
+	Long:  `Installs a Minecraft server instance.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.GetLogger().With("headless", installHeadless).Info("debugging")
+		ctx := context.Background()
 		client := minecraft.NewInstallService(minecraft.WithTimeout(
 			config.GetMinecraftApiTimeout()),
 			minecraft.WithDownloadTimeout(config.GetMinecraftDownloadTimeout()),
 		)
 
-		if err := client.Install(
+		if err := client.Install(ctx,
 			serverconfig.WithVersion(installServerVersion),
 			serverconfig.ToDestinationFolder(installDestinationFolder),
 			serverconfig.WithHeadlessConfig(installHeadless),
