@@ -586,6 +586,18 @@ func WithServerPort(p int) ServerConfig {
 	}
 }
 
+// WithRconEnabled enables RCON protocol configuration
+// 'port' to be used for this protocol
+// 'pass' define the RCON password
+func WithRconEnabled(port int, pass string) ServerConfig {
+	return func(s *ServerProperties) *ServerProperties {
+		s.RconPort = port
+		s.EnableRcon = true
+		s.RconPassword = pass
+		return s
+	}
+}
+
 // WithRcon defines RCON protocol configuration
 // 'port' to be used for this protocol
 // 'enabled' is to enable/disable feature

@@ -72,3 +72,68 @@ func NewInstallOpts(cfgs ...InstallOpt) *InstallOpts {
 	}
 	return cfg
 }
+
+func WithServerPropsMotd(m string) InstallOpt {
+	return func(s *InstallOpts) *InstallOpts {
+		s.SrvProps.Motd = m
+		return s
+	}
+}
+
+func WithServerPropsLevelName(n string) InstallOpt {
+	return func(s *InstallOpts) *InstallOpts {
+		s.SrvProps.LevelName = n
+		return s
+	}
+}
+
+func WithServerPropsServerPort(p int) InstallOpt {
+	return func(s *InstallOpts) *InstallOpts {
+		s.SrvProps.ServerPort = p
+		return s
+	}
+}
+
+// WithServerPropsRconEnabled enables RCON protocol configuration
+// 'port' to be used for this protocol
+// 'pass' define the RCON password
+func WithServerPropsRconEnabled(port int, pass string) InstallOpt {
+	return func(s *InstallOpts) *InstallOpts {
+		s.SrvProps.RconPort = port
+		s.SrvProps.EnableRcon = true
+		s.SrvProps.RconPassword = pass
+		return s
+	}
+}
+
+// WithServerPropsRcon defines RCON protocol configuration
+// 'port' to be used for this protocol
+// 'enabled' is to enable/disable feature
+// 'pass' define the RCON password
+func WithServerPropsRcon(port int, enabled bool, pass string) InstallOpt {
+	return func(s *InstallOpts) *InstallOpts {
+		s.SrvProps.RconPort = port
+		s.SrvProps.EnableRcon = enabled
+		s.SrvProps.RconPassword = pass
+		return s
+	}
+}
+
+// WithServerPropsQuery defines Query protocol configuration
+// 'port' to be used for this protocol
+// 'enabled' is to enable/disable feature
+func WithServerPropsQuery(port int, enabled bool) InstallOpt {
+	return func(s *InstallOpts) *InstallOpts {
+		s.SrvProps.QueryPort = port
+		s.SrvProps.EnableQuery = enabled
+		return s
+	}
+}
+
+// WithServerPropsSeed defines level seed
+func WithServerPropsSeed(seed string) InstallOpt {
+	return func(s *InstallOpts) *InstallOpts {
+		s.SrvProps.LevelSeed = seed
+		return s
+	}
+}
