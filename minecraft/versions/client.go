@@ -1,6 +1,7 @@
 package versions
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,9 +10,9 @@ import (
 
 type Client interface {
 	// ListVersions lists all available versions
-	ListVersions() (*VersionsResponse, error)
+	ListVersions(ctx context.Context) (*VersionsResponse, error)
 	// GetVersionInfo gets a specific version info
-	GetVersionInfo(v Version) (*VersionInfoResponse, error)
+	GetVersionInfo(ctx context.Context, v Version) (*VersionInfoResponse, error)
 }
 
 type ClientConfig struct {
@@ -38,9 +39,15 @@ func NewClient(configs ...ClientOpt) Client {
 }
 
 // ListVersions lists all available versions
-func (c *apiClient) ListVersions() (*VersionsResponse, error) {
+func (c *apiClient) ListVersions(ctx context.Context) (*VersionsResponse, error) {
 	client := c.httpClient()
-	res, err := client.Get(VersionsURL)
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, VersionsURL, nil)
+	if err != nil {
+		err = fmt.Errorf("creating versions query request instance: %w", err)
+		return nil, err
+	}
+	//res, err := client.Get(VersionsURL)
+	res, err := client.Do(r)
 	if err != nil {
 		err = fmt.Errorf("getting available versions: %w", err)
 		return nil, err
@@ -59,9 +66,15 @@ func (c *apiClient) ListVersions() (*VersionsResponse, error) {
 }
 
 // GetVersionInfo gets a specific version info
-func (c *apiClient) GetVersionInfo(v Version) (*VersionInfoResponse, error) {
+func (c *apiClient) GetVersionInfo(ctx context.Context, v Version) (*VersionInfoResponse, error) {
 	client := c.httpClient()
-	res, err := client.Get(v.URL)
+	r, err := http.NewRequestWithContext(ctx, http.MethodGet, v.URL, nil)
+	if err != nil {
+		err = fmt.Errorf("getting version info for '%s': %w", v.ID, err)
+		return nil, err
+	}
+	//res, err := client.Get(v.URL)
+	res, err := client.Do(r)
 	if err != nil {
 		err = fmt.Errorf("getting version info: %w", err)
 		return nil, err

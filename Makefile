@@ -8,6 +8,9 @@ install:
 	@echo "temp folder: $(TMP)"
 	go run ./cmd/cli install --dest $(TMP) --headless
 
+versions:
+	go run ./cmd/cli install --list
+
 vulncheck:
 	govulncheck ./...
 

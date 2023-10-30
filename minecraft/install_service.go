@@ -65,7 +65,7 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 		log.Debug("destination already exists")
 	}
 
-	ver, err := c.ListVersions()
+	ver, err := c.ListVersions(ctx)
 	if err != nil {
 		err = fmt.Errorf("getting available versions: %w", err)
 		log.With("error", err).ErrorContext(ctx, "Failed to list available versions")
@@ -81,7 +81,7 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 
 	log = log.With("version", v.ID, "version_type", v.Type)
 
-	cfg.VersionInfo, err = c.GetVersionInfo(*v)
+	cfg.VersionInfo, err = c.GetVersionInfo(ctx, *v)
 	if err != nil {
 		err = fmt.Errorf("getting version info for name '%s': %w", cfg.VersionName, err)
 		log.With("error", err).ErrorContext(ctx, "Failed to fetch version info for '%s (%s)'", v.ID, cfg.VersionName)

@@ -1,6 +1,7 @@
 package versions
 
 import (
+	"context"
 	"github.com/h2non/gock"
 	"github.com/stretchr/testify/assert"
 	"testing"
@@ -21,9 +22,11 @@ func TestListVersions(t *testing.T) {
 			Reply(200).
 			File("./samples/1.20.json")
 
+		ctx := context.Background()
+
 		c := NewClient(WithTimeout(1 * time.Second))
 
-		v, err := c.ListVersions()
+		v, err := c.ListVersions(ctx)
 		assert.Nil(t, err)
 		assert.NotNil(t, v)
 		assert.Equal(t, 696, len(v.Versions))
@@ -50,9 +53,11 @@ func TestListVersions(t *testing.T) {
 			Reply(200).
 			File("./samples/1.20.json")
 
+		ctx := context.Background()
+
 		c := NewClient(WithTimeout(1 * time.Second))
 
-		v, err := c.ListVersions()
+		v, err := c.ListVersions(ctx)
 		assert.Nil(t, err)
 		assert.NotNil(t, v)
 
@@ -60,7 +65,7 @@ func TestListVersions(t *testing.T) {
 		assert.Nil(t, err)
 		assert.NotNil(t, lr)
 
-		info, err := c.GetVersionInfo(*lr)
+		info, err := c.GetVersionInfo(ctx, *lr)
 		assert.Nil(t, err)
 		assert.NotNil(t, info)
 
@@ -80,9 +85,11 @@ func TestListVersions(t *testing.T) {
 			Delay(5 * time.Second).
 			File("./samples/versions.json")
 
+		ctx := context.Background()
+
 		c := NewClient(WithTimeout(1 * time.Second))
 
-		v, err := c.ListVersions()
+		v, err := c.ListVersions(ctx)
 		assert.NotNil(t, err)
 		assert.Nil(t, v)
 	})
