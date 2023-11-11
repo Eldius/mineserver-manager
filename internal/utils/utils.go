@@ -5,6 +5,7 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha1"
+	"errors"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"golang.org/x/term"
@@ -16,6 +17,12 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+)
+
+var (
+	ErrChecksumValidationFailed = errors.New("file sign validation error")
+	ErrCouldNotOpenFile         = errors.New("opening source file")
+	ErrCouldNotReadFile         = errors.New("reading source file content")
 )
 
 // GetFileName returns file name from URL
@@ -78,13 +85,13 @@ func ValidateFileIntegrity(ctx context.Context, file, signature string) error {
 	log := logger.GetLogger()
 	in, err := os.Open(file)
 	if err != nil {
-		err = fmt.Errorf("opening source file: %w", err)
+		err = fmt.Errorf("%s: %w", ErrCouldNotOpenFile, err)
 		return err
 	}
 
 	hash := sha1.New()
 	if _, err := io.Copy(hash, in); err != nil {
-		err = fmt.Errorf("reading source file content: %w", err)
+		err = fmt.Errorf("%s: %w", ErrCouldNotReadFile, err)
 		return err
 	}
 	sum := hash.Sum(make([]byte, 0))
@@ -92,7 +99,7 @@ func ValidateFileIntegrity(ctx context.Context, file, signature string) error {
 	fileSignature := fmt.Sprintf("%x", sum)
 	log.With("calculated", fileSignature, "original", signature).InfoContext(ctx, "FileChecksumValidation")
 	if fileSignature != signature {
-		return fmt.Errorf("file sign validation error: %w", fmt.Errorf("file sign: %s (expected: %s)", fileSignature, signature))
+		return fmt.Errorf("file sign validation error (%s): %w", fmt.Sprintf("calculated: %s => expected: %s)", fileSignature, signature), ErrChecksumValidationFailed)
 	}
 
 	return nil

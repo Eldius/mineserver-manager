@@ -11,7 +11,7 @@ func TestScriptParams_ToScript(t *testing.T) {
 			Xmx: "512m",
 			Xms: "256m",
 		}
-		s, err := sp.ToScript()
+		s, err := sp.RenderStartScript()
 		t.Logf("s: '%v'", s)
 		assert.Nil(t, err)
 		assert.Contains(t, s, "-Xms256m")
@@ -28,7 +28,7 @@ func TestScriptParams_ToScript(t *testing.T) {
 			LogConfigFile: true,
 		}
 
-		s, err := sp.ToScript()
+		s, err := sp.RenderStartScript()
 		t.Logf("s: '%v'", s)
 		assert.Nil(t, err)
 
@@ -45,7 +45,7 @@ func TestScriptParams_ToScript(t *testing.T) {
 			Xms:      "256m",
 			Headless: true,
 		}
-		s, err := sp.ToScript()
+		s, err := sp.RenderStartScript()
 		t.Logf("s: '%v'", s)
 		assert.Nil(t, err)
 

@@ -7,6 +7,11 @@ import (
 	"text/template"
 )
 
+const (
+	StartScriptFileName = "start.sh"
+	StopScriptFileName  = "stop.sh"
+)
+
 var (
 	//go:embed all:templates
 	templateFiles embed.FS
@@ -29,9 +34,19 @@ type RuntimeParams struct {
 	Headless      bool
 }
 
-func (s RuntimeParams) ToScript() (string, error) {
+func (s RuntimeParams) RenderStartScript() (string, error) {
 	var b bytes.Buffer
-	if err := tpl.ExecuteTemplate(&b, "start.sh", s); err != nil {
+	if err := tpl.ExecuteTemplate(&b, StartScriptFileName, s); err != nil {
+		err = fmt.Errorf("generating start script: %w", err)
+		return "", err
+	}
+
+	return b.String(), nil
+}
+
+func (s RuntimeParams) RenderStopScript() (string, error) {
+	var b bytes.Buffer
+	if err := tpl.ExecuteTemplate(&b, StopScriptFileName, s); err != nil {
 		err = fmt.Errorf("generating start script: %w", err)
 		return "", err
 	}

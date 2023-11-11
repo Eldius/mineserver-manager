@@ -16,6 +16,10 @@ import (
 	"time"
 )
 
+var (
+	ErrChecksumValidationFailed = utils.ErrChecksumValidationFailed
+)
+
 type InstallServiceConfig struct {
 	Timeout         time.Duration
 	DownloadTimeout time.Duration
@@ -122,6 +126,12 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 		return err
 	}
 
+	if err := i.CreateStopScript(*cfg.Start, cfg.AbsoluteDestPath()); err != nil {
+		err = fmt.Errorf("creating stop script: %w", err)
+		log.With("error", err).ErrorContext(ctx, "Failed to create stop script")
+		return err
+	}
+
 	if cfg.Start.LogConfigFile {
 		if err := i.CreateLoggingConfig(*cfg.Start, cfg.AbsoluteDestPath()); err != nil {
 			err = fmt.Errorf("generating log config file: %w", err)
@@ -171,7 +181,7 @@ func (i *vanillaInstaller) CreateServerProperties(cfg *serverconfig.InstallOpts)
 
 // CreateStartScript generates the start script
 func (i *vanillaInstaller) CreateStartScript(s serverconfig.RuntimeParams, dest string) error {
-	destFile := filepath.Join(dest, "start.sh")
+	destFile := filepath.Join(dest, serverconfig.StartScriptFileName)
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -179,7 +189,7 @@ func (i *vanillaInstaller) CreateStartScript(s serverconfig.RuntimeParams, dest 
 		return err
 	}
 
-	scp, err := s.ToScript()
+	scp, err := s.RenderStartScript()
 	if err != nil {
 		err = fmt.Errorf("generating start script content: %w", err)
 		return err
@@ -187,6 +197,29 @@ func (i *vanillaInstaller) CreateStartScript(s serverconfig.RuntimeParams, dest 
 
 	if _, err := f.Write([]byte(scp)); err != nil {
 		err = fmt.Errorf("writing start script to file: %w", err)
+		return err
+	}
+	return nil
+}
+
+// CreateStopScript generates the stop server script
+func (i *vanillaInstaller) CreateStopScript(s serverconfig.RuntimeParams, dest string) error {
+	destFile := filepath.Join(dest, serverconfig.StopScriptFileName)
+
+	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
+	if err != nil {
+		err = fmt.Errorf("creating server stop script: %w", err)
+		return err
+	}
+
+	scp, err := s.RenderStopScript()
+	if err != nil {
+		err = fmt.Errorf("generating stop script content: %w", err)
+		return err
+	}
+
+	if _, err := f.Write([]byte(scp)); err != nil {
+		err = fmt.Errorf("writing stop script to file: %w", err)
 		return err
 	}
 	return nil
