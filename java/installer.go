@@ -12,6 +12,12 @@ import (
 var (
 	// JavaVersions is a map of Java Runtime download links
 	JavaVersions = map[int]map[string]map[string]string{
+		21: {
+			"linux": {
+				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-21.0.4-linux-x64.tar.gz",
+				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-21.0.4-linux-aarch64.tar.gz",
+			},
+		},
 		17: {
 			"linux": {
 				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-x64.tar.gz",

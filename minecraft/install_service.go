@@ -116,7 +116,7 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 
 	if err = utils.UnpackTarGZ(ctx, jdk, cfg.AbsoluteDestPath()); err != nil {
 		err = fmt.Errorf("unpacking jdk package: %w", err)
-		log.ErrorContext(ctx, "Failed to unpack JDK package: %v", err)
+		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
 		return err
 	}
 
@@ -152,7 +152,7 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 func (i *vanillaInstaller) DownloadServer(ctx context.Context, v versions.VersionInfoResponse, dest string) (string, error) {
 	destFile := filepath.Join(dest, utils.GetFileName(v.Downloads.Server.URL))
 	if err := utils.DownloadFile(ctx, i.cfg.DownloadTimeout, v.Downloads.Server.URL, destFile); err != nil {
-		err = fmt.Errorf("getting version info: %w", err)
+		err = fmt.Errorf("downloading server file: %w", err)
 		return "", err
 	}
 

@@ -31,7 +31,7 @@ var installCmd = &cobra.Command{
 		if installOpts.JustListVersions {
 			if err := minecraft.ListVersions(ctx); err != nil {
 				err = fmt.Errorf("listing available versions: %w", err)
-				slog.ErrorContext(ctx, "failed to list available versions: %v", err)
+				slog.With("error", err).ErrorContext(ctx, "failed to list available versions")
 				panic(err)
 			}
 		} else {
@@ -43,7 +43,7 @@ var installCmd = &cobra.Command{
 			)
 			if err := client.Install(ctx, opts...); err != nil {
 				err = fmt.Errorf("installing server: %w", err)
-				slog.ErrorContext(ctx, "failed to install server: %v", err)
+				slog.With("error", err).ErrorContext(ctx, "failed to install server")
 				panic(err)
 			}
 		}

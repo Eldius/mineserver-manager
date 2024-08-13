@@ -43,7 +43,7 @@ func DownloadFile(ctx context.Context, timeout time.Duration, u, destFile string
 	}
 	res, err := c.Do(r)
 	if err != nil {
-		err = fmt.Errorf("getting version info: %w", err)
+		err = fmt.Errorf("downloading file from %s: %w", u, err)
 		return err
 	}
 	defer func() {
