@@ -3,7 +3,7 @@
 #  This template allows you to validate your Go (Golang) code.
 #  The workflow allows running tests, build and code linting on the default branch.
 
-image: golang:1.21-alpine
+image: golang:1.22-alpine
 
 definitions:
   steps:
