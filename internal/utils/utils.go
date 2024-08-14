@@ -107,8 +107,13 @@ func ValidateFileIntegrity(ctx context.Context, file, signature string) error {
 
 // UnpackTarGZ unpacks .tar.gz file to destDir
 func UnpackTarGZ(ctx context.Context, file, destDir string) error {
-	log := logger.GetLogger().With("action", "unpack", "file", file, "dest", destDir)
-	log.Info("File '%s' unpacked to '%s'", file, destDir)
+	log := logger.GetLogger().With(
+		slog.String("action", "unpack"),
+		slog.String("file", file),
+		slog.String("dest", destDir),
+	)
+
+	log.Info("Starting to unpack file")
 	if err := os.MkdirAll(destDir, os.ModePerm); err != nil {
 		err = fmt.Errorf("creating installation base path: %w", err)
 		log.With("error", err).ErrorContext(ctx, "Failed to create destination directory")

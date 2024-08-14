@@ -3,15 +3,19 @@ package java
 import (
 	"context"
 	"fmt"
+	"github.com/eldius/mineserver-manager/internal/logger"
 	utils "github.com/eldius/mineserver-manager/internal/utils"
+	"io/fs"
+	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 )
 
 var (
-	// JavaVersions is a map of Java Runtime download links
-	JavaVersions = map[int]map[string]map[string]string{
+	// PackageVersions is a map of Java Runtime download links
+	PackageVersions = map[int]map[string]map[string]string{
 		21: {
 			"linux": {
 				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-21.0.4-linux-x64.tar.gz",
@@ -33,9 +37,9 @@ var (
 	}
 )
 
-// DownloadJDK downloads JVM package
-func DownloadJDK(ctx context.Context, v int, arch, osName string, timeout time.Duration) (string, error) {
-	u := JavaVersions[v][osName][arch]
+// Download downloads JVM package
+func Download(ctx context.Context, v int, arch, osName string, timeout time.Duration) (string, error) {
+	u := PackageVersions[v][osName][arch]
 	tempDir, err := os.MkdirTemp(os.TempDir(), "mine-installer-*")
 	if err != nil {
 		err = fmt.Errorf("creating temp folder to save java runtime (osName: %s/arch: %s/v: %d): %w", osName, arch, v, err)
@@ -49,4 +53,51 @@ func DownloadJDK(ctx context.Context, v int, arch, osName string, timeout time.D
 	}
 
 	return dest, nil
+}
+
+// Install downloads and unpack JDK to destination folder
+func Install(ctx context.Context, dest string, v int, arch, osName string, timeout time.Duration) (string, error) {
+	log := logger.GetLogger().With(slog.String("action", "install_jdk"), slog.Int("jdk_version", v))
+
+	jdkPackage, err := Download(ctx, v, arch, osName, timeout)
+	if err != nil {
+		err = fmt.Errorf("downloading java runtime to install: %w", err)
+		return "", err
+	}
+
+	if err = utils.UnpackTarGZ(ctx, jdkPackage, dest); err != nil {
+		err = fmt.Errorf("unpacking jdk package: %w", err)
+		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
+		return "", err
+	}
+	jdkUnpacked, err := findJDKUnpackedFolder(dest)
+	if err != nil {
+		err = fmt.Errorf("finding unpacked jdk root folder: %w", err)
+		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
+		return "", err
+	}
+
+	jdkBasePath := filepath.Join(dest, "java")
+	if err := os.Rename(jdkUnpacked, jdkBasePath); err != nil {
+		err = fmt.Errorf("renaming unpacked jdk root folder: %w", err)
+		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
+		return "", err
+	}
+	return jdkBasePath, nil
+}
+
+func findJDKUnpackedFolder(root string) (string, error) {
+	var file string
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+
+		if strings.HasPrefix(d.Name(), "jdk") {
+			file = path
+		}
+
+		return nil
+	})
+	return file, err
 }

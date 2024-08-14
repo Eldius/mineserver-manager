@@ -107,16 +107,9 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 
 	log.With("server_file", sf).DebugContext(ctx, "Dowloaded server file")
 
-	jdk, err := java.DownloadJDK(ctx, cfg.VersionInfo.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout)
-	if err != nil {
+	if _, err := java.Install(ctx, cfg.AbsoluteDestPath(), cfg.VersionInfo.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout); err != nil {
 		err = fmt.Errorf("downloading jdk package: %w", err)
 		log.With("error", err).ErrorContext(ctx, "Failed to download jdk")
-		return err
-	}
-
-	if err = utils.UnpackTarGZ(ctx, jdk, cfg.AbsoluteDestPath()); err != nil {
-		err = fmt.Errorf("unpacking jdk package: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
 		return err
 	}
 
