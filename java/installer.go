@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	utils "github.com/eldius/mineserver-manager/internal/utils"
-	"io/fs"
 	"log/slog"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 )
 
@@ -70,34 +68,41 @@ func Install(ctx context.Context, dest string, v int, arch, osName string, timeo
 		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
 		return "", err
 	}
-	jdkUnpacked, err := findJDKUnpackedFolder(dest)
-	if err != nil {
-		err = fmt.Errorf("finding unpacked jdk root folder: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
-		return "", err
-	}
 
-	jdkBasePath := filepath.Join(dest, "java")
-	if err := os.Rename(jdkUnpacked, jdkBasePath); err != nil {
-		err = fmt.Errorf("renaming unpacked jdk root folder: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
-		return "", err
-	}
-	return jdkBasePath, nil
+	return dest, nil
+	//jdkUnpacked, err := findJDKUnpackedFolder(dest)
+	//if err != nil {
+	//	err = fmt.Errorf("finding unpacked jdk root folder: %w", err)
+	//	log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
+	//	return "", err
+	//}
+	//
+	//jdkBasePath := filepath.Join(dest, "java")
+	//log.With(
+	//	slog.String("jdk_folder", jdkUnpacked),
+	//	slog.String("jdk_new_folder", jdkBasePath),
+	//).Debug("Found JDK folder")
+	//
+	//if err := os.Rename(jdkUnpacked, jdkBasePath); err != nil {
+	//	err = fmt.Errorf("renaming unpacked jdk root folder: %w", err)
+	//	log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
+	//	return "", err
+	//}
+	//return jdkUnpacked, nil
 }
 
-func findJDKUnpackedFolder(root string) (string, error) {
-	var file string
-	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
-		if d.IsDir() {
-			return nil
-		}
-
-		if strings.HasPrefix(d.Name(), "jdk") {
-			file = path
-		}
-
-		return nil
-	})
-	return file, err
-}
+//func findJDKUnpackedFolder(root string) (string, error) {
+//	var file string
+//	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
+//		if d.IsDir() {
+//			return nil
+//		}
+//
+//		if strings.Contains(d.Name(), "jdk") && d.IsDir() {
+//			file = path
+//		}
+//
+//		return nil
+//	})
+//	return file, err
+//}
