@@ -69,6 +69,8 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 		log.Debug("destination already exists")
 	}
 
+	fmt.Printf("#####################\nInstalling server\n----------------------\nversion: %s\nserver properties:\n%s\n#####################\n\n", cfg.VersionName, cfg.ServerPropertiesString())
+
 	ver, err := c.ListVersions(ctx)
 	if err != nil {
 		err = fmt.Errorf("getting available versions: %w", err)
@@ -107,7 +109,7 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 
 	log.With("server_file", sf).DebugContext(ctx, "Dowloaded server file")
 
-	if _, err := java.Install(ctx, cfg.AbsoluteDestPath(), cfg.VersionInfo.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout); err != nil {
+	if _, err := java.Install(ctx, filepath.Join(cfg.AbsoluteDestPath(), "java"), cfg.VersionInfo.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout); err != nil {
 		err = fmt.Errorf("downloading jdk package: %w", err)
 		log.With("error", err).ErrorContext(ctx, "Failed to download jdk")
 		return err

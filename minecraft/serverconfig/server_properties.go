@@ -66,7 +66,7 @@ type ServerProperties struct {
 	// default: false
 	// false - Flight is not allowed (players in air for at least 5 seconds get kicked).
 	// true - Flight is allowed, and used if the player has a fly mod installed.
-	AllowFlight bool `properties:"allow-flight"`
+	AllowFlight bool `properties:"allow-flight" json:"allow_flight,omitempty" yaml:"allow_flight"`
 
 	// AllowNether
 	// Allows players to travel to the Nether.
@@ -76,21 +76,21 @@ type ServerProperties struct {
 	// default: true
 	// false - Nether portals do not work.
 	// true - The server allows portals to send players to the Nether.
-	AllowNether bool `properties:"allow-nether"`
+	AllowNether bool `properties:"allow-nether" json:"allow_nether,omitempty" yaml:"allow_nether"`
 
 	// BroadcastToOps
 	// Send console command outputs to all online operators.
 	// broadcast-console-to-ops
 	// type: boolean
 	// default: true
-	BroadcastToOps bool `properties:"broadcast-console-to-ops"`
+	BroadcastToOps bool `properties:"broadcast-console-to-ops" json:"broadcast_to_ops,omitempty" yaml:"broadcast_to_ops"`
 
 	// BroadcastRconToOps
 	// Send rcon console command outputs to all online operators.
 	// broadcast-rcon-to-ops
 	// type: boolean
 	// default: true
-	BroadcastRconToOps bool `properties:"broadcast-rcon-to-ops"`
+	BroadcastRconToOps bool `properties:"broadcast-rcon-to-ops" json:"broadcast_rcon_to_ops,omitempty" yaml:"broadcast_rcon_to_ops"`
 
 	// Difficulty
 	// Defines the difficulty (such as damage dealt by mobs and the way hunger and poison affects players) of the server.
@@ -104,21 +104,21 @@ type ServerProperties struct {
 	// easy (1)
 	// normal (2)
 	// hard (3)
-	Difficulty GameDifficulty `properties:"difficulty"`
+	Difficulty GameDifficulty `properties:"difficulty" json:"difficulty,omitempty" yaml:"difficulty"`
 
 	// EnableCommandBlock
 	// Enables command blocks.
 	// enable-command-block
 	// type: boolean
 	// default: false
-	EnableCommandBlock bool `properties:"enable-command-block"`
+	EnableCommandBlock bool `properties:"enable-command-block" json:"enable_command_block,omitempty" yaml:"enable_command_block"`
 
 	// EnableJmxMonitoring
 	// Exposes an MBean with the Object name net.minecraft.server:type=Server and two attributes averageTickTime and tickTimes exposing the tick times in milliseconds.
 	// enable-jmx-monitoring
 	// type: boolean
 	// default: false
-	EnableJmxMonitoring bool `properties:"enable-jmx-monitoring"`
+	EnableJmxMonitoring bool `properties:"enable-jmx-monitoring" json:"enable_jmx_monitoring,omitempty" yaml:"enable_jmx_monitoring"`
 
 	// EnableRcon
 	// Enables remote access to the server console.
@@ -126,7 +126,7 @@ type ServerProperties struct {
 	// enable-rcon
 	// type: boolean
 	// default: false
-	EnableRcon bool `properties:"enable-rcon"`
+	EnableRcon bool `properties:"enable-rcon" json:"enable_rcon,omitempty" yaml:"enable_rcon"`
 
 	// EnableStatus
 	// Makes the server appear as "online" on the server list.
@@ -134,7 +134,7 @@ type ServerProperties struct {
 	// enable-status
 	// type: boolean
 	// default: true
-	EnableStatus bool `properties:"enable-status"`
+	EnableStatus bool `properties:"enable-status" json:"enable_status,omitempty" yaml:"enable_status"`
 
 	// EnableQuery
 	// Enables GameSpy4 protocol server listener. Used to get information about server.
@@ -142,21 +142,21 @@ type ServerProperties struct {
 	// enable-query
 	// type: boolean
 	// default: false
-	EnableQuery bool `properties:"enable-query"`
+	EnableQuery bool `properties:"enable-query" json:"enable_query,omitempty" yaml:"enable_query"`
 
 	// EnforceSecureProfile
 	// If set to true, players without a Mojang-signed public key will not be able to connect to the server.
 	// enforce-secure-profile
 	// type: boolean
 	// default: true
-	EnforceSecureProfile bool `properties:"enforce-secure-profile"`
+	EnforceSecureProfile bool `properties:"enforce-secure-profile" json:"enforce_secure_profile,omitempty" yaml:"enforce_secure_profile"`
 
 	// EnforceWhitelist
 	// Enforces the whitelist on the server.
 	// enforce-whitelist
 	// type: boolean
 	// default: false
-	EnforceWhitelist bool `properties:"enforce-whitelist"`
+	EnforceWhitelist bool `properties:"enforce-whitelist" json:"enforce_whitelist,omitempty" yaml:"enforce_whitelist"`
 
 	// EntityBroadcastRangePercentage
 	// Controls how close entities need to be before being sent to clients. Higher values means they'll be rendered from farther away, potentially causing more lag. This is expressed the percentage of the default value. For example, setting to 50 will make it half as usual. This mimics the function on the client video settings (not unlike Render Distance, which the client can customize so long as it's under the server's setting).
@@ -167,7 +167,7 @@ type ServerProperties struct {
 	// entity-broadcast-range-percentage
 	// type: integer (10-1000)
 	// default: 100
-	EntityBroadcastRangePercentage int `properties:"entity-broadcast-range-percentage"`
+	EntityBroadcastRangePercentage int `properties:"entity-broadcast-range-percentage" json:"entity_broadcast_range_percentage,omitempty" yaml:"entity_broadcast_range_percentage"`
 
 	// ForceGameMode
 	// Force players to join in the default game mode.
@@ -178,14 +178,14 @@ type ServerProperties struct {
 	// force-gamemode
 	// type: boolean
 	// default: false
-	ForceGameMode bool `properties:"force-gamemode"`
+	ForceGameMode bool `properties:"force-gamemode" json:"force_game_mode,omitempty" yaml:"force_game_mode"`
 
 	// FunctionPermissionLevel
 	// See [permission level](https://minecraft.fandom.com/wiki/Permission_level) for the details on the 4 levels.
 	// function-permission-level
 	// type: integer (1-4)
 	// default: 2
-	FunctionPermissionLevel int `properties:"function-permission-level"`
+	FunctionPermissionLevel int `properties:"function-permission-level" json:"function_permission_level,omitempty" yaml:"function_permission_level"`
 
 	// GameMode
 	// Defines the mode of gameplay.
@@ -199,7 +199,7 @@ type ServerProperties struct {
 	//creative (1)
 	//adventure (2)
 	//spectator (3)
-	GameMode GameMode `properties:"gamemode"`
+	GameMode GameMode `properties:"gamemode" json:"game_mode,omitempty" yaml:"game_mode"`
 
 	// GenerateStructures
 	// Defines whether structures (such as villages) can be generated.
@@ -211,42 +211,42 @@ type ServerProperties struct {
 	// true - Structures are generated in new chunks.
 	//
 	// Note: Dungeons still generate if this is set to false.
-	GenerateStructures bool `properties:"generate-structures"`
+	GenerateStructures bool `properties:"generate-structures" json:"generate_structures,omitempty" yaml:"generate_structures"`
 
 	// GeneratorSettings
 	// The settings used to customize world generation. Follow its format and write the corresponding JSON string. Remember to escape all : with \:.
 	// generator-settings
 	// type: string
 	// default: {}
-	GeneratorSettings string `properties:"generator-settings"`
+	GeneratorSettings string `properties:"generator-settings" json:"generator_settings,omitempty" yaml:"generator_settings"`
 
 	// Hardcore
 	// If set to true, server difficulty is ignored and set to hard and players are set to spectator mode if they die.
 	// hardcore
 	// type: boolean
 	// default: false
-	Hardcore bool `properties:"hardcore"`
+	Hardcore bool `properties:"hardcore" json:"hardcore,omitempty" yaml:"hardcore"`
 
 	// HideOnlinePlayers
 	// If set to true, a player list is not sent on status requests.
 	// hide-online-players
 	// type: boolean
 	// default: false
-	HideOnlinePlayers bool `properties:"hide-online-players"`
+	HideOnlinePlayers bool `properties:"hide-online-players" json:"hide_online_players,omitempty" yaml:"hide_online_players"`
 
 	// InitialDisabledPacks
 	// Comma-separated list of datapacks to not be auto-enabled on world creation.
 	// initial-disabled-packs
 	// type: string
 	// default: blank
-	InitialDisabledPacks string `properties:"initial-disabled-packs"`
+	InitialDisabledPacks string `properties:"initial-disabled-packs" json:"initial_disabled_packs,omitempty" yaml:"initial_disabled_packs"`
 
 	// InitialEnabledPacks
 	// Comma-separated list of datapacks to be enabled during world creation. Feature packs need to be explicitly enabled.
 	// initial-enabled-packs
 	// type: string
 	// default: minecraft
-	InitialEnabledPacks string `properties:"initial-enabled-packs"`
+	InitialEnabledPacks string `properties:"initial-enabled-packs" json:"initial_enabled_packs,omitempty" yaml:"initial_enabled_packs"`
 
 	// LevelName
 	// The "level-name" value is used as the world name and its folder name. The player may also copy their saved game folder here, and change the name to the same as that folder's to load it instead.
@@ -255,7 +255,7 @@ type ServerProperties struct {
 	// default: world
 	//
 	// Characters such as ' (apostrophe) may need to be escaped by adding a backslash before them.
-	LevelName string `properties:"level-name"`
+	LevelName string `properties:"level-name" json:"level_name,omitempty" yaml:"level_name"`
 
 	// LevelSeed
 	// Sets a world seed for the player's world, as in Singleplayer. The world generates with a random seed if left blank.
@@ -264,7 +264,7 @@ type ServerProperties struct {
 	// default: blank
 	//
 	//Some examples are: minecraft, 404, 1a2b3c.
-	LevelSeed string `properties:"level-seed"`
+	LevelSeed string `properties:"level-seed" json:"level_seed,omitempty" yaml:"level_seed"`
 
 	// LevelType
 	// Determines the world preset that is generated.
@@ -282,19 +282,19 @@ type ServerProperties struct {
 	// buffet - Only for 1.15 or before. Same as default unless generator-settings is set.
 	// default_1_1 - Only for 1.15 or before. Same as default, but counted as a different world type.
 	// customized - Only for 1.15 or before. After 1.13, this value is no different than default, but in 1.12 and before, it could be used to create a completely custom world.
-	LevelType LevelType `properties:"level-type"`
+	LevelType LevelType `properties:"level-type" json:"level_type,omitempty" yaml:"level_type"`
 
 	// Limiting the amount of consecutive neighbor updates before skipping additional ones. Negative values remove the limit.
 	// max-chained-neighbor-updates
 	// type: integer
 	// default: 1000000
-	MaxChainedNeighborUpdates int `properties:"max-chained-neighbor-updates"`
+	MaxChainedNeighborUpdates int `properties:"max-chained-neighbor-updates" json:"max_chained_neighbor_updates,omitempty" yaml:"max_chained_neighbor_updates"`
 
 	// The maximum number of players that can play on the server at the same time. Note that more players on the server consume more resources. Note also, op player connections are not supposed to count against the max players, but ops currently cannot join a full server. However, this can be changed by going to the file called ops.json in the player's server directory, opening it, finding the op that the player wants to change, and changing the setting called bypassesPlayerLimit to true (the default is false). This means that that op does not have to wait for a player to leave in order to join. Extremely large values for this field result in the client-side user list being broken.
 	// max-players
 	// type: integer (0-(2^31 - 1))
 	// default: 20
-	MaxPlayers int `properties:"max-players"`
+	MaxPlayers int `properties:"max-players" json:"max_players,omitempty" yaml:"max_players"`
 
 	// The maximum number of milliseconds a single tick may take before the server watchdog stops the server with the message, A single server tick took 60.00 seconds (should be max 0.05); Considering it to be crashed, server will forcibly shutdown. Once this criterion is met, it calls System.exit(1).
 	// max-tick-time
@@ -302,7 +302,7 @@ type ServerProperties struct {
 	// default: 60000
 	//
 	// -1 - disable watchdog entirely (this disable option was added in 14w32a)
-	MaxTickTime int64 `properties:"max-tick-time"`
+	MaxTickTime int64 `properties:"max-tick-time" json:"max_tick_time,omitempty" yaml:"max_tick_time"`
 
 	// This sets the maximum possible size in blocks, expressed as a radius, that the world border can obtain. Setting the world border bigger causes the commands to complete successfully but the actual border does not move past this block limit. Setting the max-world-size higher than the default doesn't appear to do anything.
 	// max-world-size
@@ -313,7 +313,7 @@ type ServerProperties struct {
 	//
 	// Setting max-world-size to 1000 allows the player to have a 2000×2000 world border.
 	// Setting max-world-size to 4000 gives the player an 8000×8000 world border.
-	MaxWorldSize int64 `properties:"max-world-size"`
+	MaxWorldSize int64 `properties:"max-world-size" json:"max_world_size,omitempty" yaml:"max_world_size"`
 
 	// This is the message that is displayed in the server list of the client, below the name.
 	// motd
@@ -323,7 +323,7 @@ type ServerProperties struct {
 	// The MOTD supports color and formatting codes.
 	// The MOTD supports special characters, such as "♥". However, such characters must be converted to escaped Unicode form. An online converter can be found here.
 	// If the MOTD is over 59 characters, the server list may report a communication error.
-	Motd string `properties:"motd"`
+	Motd string `properties:"motd" json:"motd,omitempty" yaml:"motd"`
 
 	// By default it allows packets that are n-1 bytes big to go normally, but a packet of n bytes or more gets compressed down. So, a lower number means more compression but compressing small amounts of bytes might actually end up with a larger result than what went in.
 	// network-compression-threshold
@@ -334,7 +334,7 @@ type ServerProperties struct {
 	// 0 - compress everything
 	//
 	// Note: The Ethernet spec requires that packets less than 64 bytes become padded to 64 bytes. Thus, setting a value lower than 64 may not be beneficial. It is also not recommended to exceed the MTU, typically 1500 bytes.
-	NetworkCompressionThreshold int `properties:"network-compression-threshold"`
+	NetworkCompressionThreshold int `properties:"network-compression-threshold" json:"network_compression_threshold,omitempty" yaml:"network_compression_threshold"`
 
 	// Server checks connecting players against Minecraft account database. Set this to false only if the player's server is not connected to the Internet. Hackers with fake accounts can connect if this is set to false! If minecraft.net is down or inaccessible, no players can connect if this is set to true. Setting this variable to off purposely is called "cracking" a server, and servers that are present with online mode off are called "cracked" servers, allowing players with unlicensed copies of Minecraft to join.
 	// online-mode
@@ -343,13 +343,13 @@ type ServerProperties struct {
 	//
 	//true - Enabled. The server assumes it has an Internet connection and checks every connecting player.
 	//false - Disabled. The server does not attempt to check connecting players.
-	OnlineMode bool `properties:"online-mode"`
+	OnlineMode bool `properties:"online-mode" json:"online_mode,omitempty" yaml:"online_mode"`
 
 	// Sets the default permission level for ops when using /op.
 	// op-permission-level
 	// type: integer (0-4)
 	// default: 4
-	OpPermissionLevel int `properties:"op-permission-level"`
+	OpPermissionLevel int `properties:"op-permission-level" json:"op_permission_level,omitempty" yaml:"op_permission_level"`
 
 	// If non-zero, players are kicked from the server if they are idle for more than that many minutes.
 	// player-idle-timeout
@@ -369,13 +369,13 @@ type ServerProperties struct {
 	// Client Status
 	// Chat Message
 	// Use Entity
-	PlayerIdleTimeout int64 `properties:"player-idle-timeout"`
+	PlayerIdleTimeout int64 `properties:"player-idle-timeout" json:"player_idle_timeout,omitempty" yaml:"player_idle_timeout"`
 
 	// If the ISP/AS sent from the server is different from the one from Mojang Studios' authentication server, the player is kicked.
 	// prevent-proxy-connections
 	// type: boolean
 	// default: false
-	PreventProxyConnections bool `properties:"prevent-proxy-connections"`
+	PreventProxyConnections bool `properties:"prevent-proxy-connections" json:"prevent_proxy_connections,omitempty" yaml:"prevent_proxy_connections"`
 
 	// If set to true, chat preview will be enabled.
 	// previews-chat
@@ -384,7 +384,7 @@ type ServerProperties struct {
 	//
 	// true - Enabled. When enabled, a server-controlled preview appears above the chat edit box, showing how the message will look when sent.
 	// false - Disabled.
-	PreviewChat bool `properties:"previews-chat"`
+	PreviewChat bool `properties:"previews-chat" json:"preview_chat,omitempty" yaml:"preview_chat"`
 
 	// Enable PvP on the server. Players shooting themselves with arrows receive damage only if PvP is enabled.
 	// pvp
@@ -395,31 +395,31 @@ type ServerProperties struct {
 	// false - Players cannot kill other players (also known as Player versus Environment (PvE)).
 	//
 	// Note: Indirect damage sources spawned by players (such as lava, fire, TNT and to some extent water, sand and gravel) still deal damage to other players.
-	Pvp bool `properties:"pvp"`
+	Pvp bool `properties:"pvp" json:"pvp,omitempty" yaml:"pvp"`
 
 	// Sets the port for the query server (see enable-query).
 	// query.port
 	// type: integer (1-(2^16 - 2))
 	// default: 25565
-	QueryPort int `properties:"query.port"`
+	QueryPort int `properties:"query.port" json:"query_port,omitempty" yaml:"query_port"`
 
 	// Sets the maximum amount of packets a user can send before getting kicked. Setting to 0 disables this feature.
 	// rate-limit
 	// type: integer
 	// default: 0
-	RateLimit int `properties:"rate-limit"`
+	RateLimit int `properties:"rate-limit" json:"rate_limit,omitempty" yaml:"rate_limit"`
 
 	// Sets the password for RCON: a remote console protocol that can allow other applications to connect and interact with a Minecraft server over the internet.
 	// rcon.password
 	// type: string
 	// default: blank
-	RconPassword string `properties:"rcon.password"`
+	RconPassword string `properties:"rcon.password" json:"rcon_password,omitempty" yaml:"rcon_password"`
 
 	// Sets the RCON network port.
 	// rcon.port
 	// type: integer (1-(2^16 - 2))
 	// default: 25575
-	RconPort int `properties:"rcon.port"`
+	RconPort int `properties:"rcon.port" json:"rcon_port,omitempty" yaml:"rcon_port"`
 
 	// Optional URI to a resource pack. The player may choose to use it.
 	// resource-pack
@@ -429,7 +429,7 @@ type ServerProperties struct {
 	// Note that (in some versions before 1.15.2), the ":" and "=" characters need to be escaped with a backslash (\), e.g. http\://somedomain.com/somepack.zip?someparam\=somevalue
 	//
 	// The resource pack may not have a larger file size than 250 MiB (Before 1.18: 100 MiB (≈ 100.8 MB)) (Before 1.15: 50 MiB (≈ 50.4 MB)). Note that download success or failure is logged by the client, and not by the server.
-	ResourcePack string `properties:"resource-pack"`
+	ResourcePack string `properties:"resource-pack" json:"resource_pack,omitempty" yaml:"resource_pack"`
 
 	// Optional, adds a custom message to be shown on resource pack prompt when require-resource-pack is used.
 	// resource-pack-prompt
@@ -437,7 +437,7 @@ type ServerProperties struct {
 	// default: blank
 	//
 	// Expects chat component syntax, can contain multiple lines.
-	ResourcePackPrompt string `properties:"resource-pack-prompt"`
+	ResourcePackPrompt string `properties:"resource-pack-prompt" json:"resource_pack_prompt,omitempty" yaml:"resource_pack_prompt"`
 
 	// Optional SHA-1 digest of the resource pack, in lowercase hexadecimal. It is recommended to specify this, because it is used to verify the integrity of the resource pack.
 	// resource-pack-sha1
@@ -445,13 +445,13 @@ type ServerProperties struct {
 	// default: blank
 	//
 	// Note: If the resource pack is any different, a yellow message "Invalid sha1 for resource-pack-sha1" appears in the console when the server starts. Due to the nature of hash functions, errors have a tiny probability of occurring, so this consequence has no effect.
-	ResourcePackSHA1 string `properties:"resource-pack-sha1"`
+	ResourcePackSHA1 string `properties:"resource-pack-sha1" json:"resource_pack_sha_1,omitempty" yaml:"resource_pack_sha_1"`
 
 	// When this option is enabled (set to true), players will be prompted for a response and will be disconnected if they decline the required pack.
 	// require-resource-pack
 	// type: boolean
 	// default: false
-	RequireResourcePack bool `properties:"require-resource-pack"`
+	RequireResourcePack bool `properties:"require-resource-pack" json:"require_resource_pack,omitempty" yaml:"require_resource_pack"`
 
 	// The player should set this if they want the server to bind to a particular IP. It is strongly recommended that the player leaves server-ip blank.
 	// server-ip
@@ -459,13 +459,13 @@ type ServerProperties struct {
 	// default: blank
 	//
 	// Set to blank, or the IP the player want their server to run (listen) on.
-	ServerIP string `properties:"server-ip"`
+	ServerIP string `properties:"server-ip" json:"server_ip,omitempty" yaml:"server_ip"`
 
 	// Changes the port the server is hosting (listening) on. This port must be forwarded if the server is hosted in a network using NAT (if the player has a home router/firewall).
 	// server-port
 	// type: integer (1-(2^16 - 2))
 	// default: 25565
-	ServerPort int `properties:"server-port"`
+	ServerPort int `properties:"server-port" json:"server_port,omitempty" yaml:"server_port"`
 
 	// Sets the maximum distance from players that living entities may be located in order to be updated by the server, measured in chunks in each direction of the player (radius, not diameter). If entities are outside of this radius, then they will not be ticked by the server nor will they be visible to players.
 	// simulation-distance
@@ -473,7 +473,7 @@ type ServerProperties struct {
 	// default: 10
 	//
 	// 10 is the default/recommended. If the player has major lag, this value is recommended to be reduced.
-	SimulationDistance int `properties:"simulation-distance"`
+	SimulationDistance int `properties:"simulation-distance" json:"simulation_distance,omitempty" yaml:"simulation_distance"`
 
 	// Sets whether the server sends snoop data regularly to http://snoop.minecraft.net.
 	// snooper-enabled
@@ -482,7 +482,7 @@ type ServerProperties struct {
 	//
 	// false - disable snooping.
 	// true - enable snooping.
-	SnooperEnabled bool `properties:"snooper-enabled"`
+	SnooperEnabled bool `properties:"snooper-enabled" json:"snooper_enabled,omitempty" yaml:"snooper_enabled"`
 
 	// Determines if animals can spawn.
 	// spawn-animals
@@ -493,7 +493,7 @@ type ServerProperties struct {
 	// false - Animals immediately vanish.
 	//
 	// If the player has major lag, it is recommended to turn this off/set to false.
-	SpawnAnimals bool `properties:"spawn-animals"`
+	SpawnAnimals bool `properties:"spawn-animals" json:"spawn_animals,omitempty" yaml:"spawn_animals"`
 
 	// This setting has no effect if difficulty = 0 (peaceful). If difficulty is not = 0, a monster can still spawn from a monster spawner.
 	// spawn-monsters
@@ -505,7 +505,7 @@ type ServerProperties struct {
 	// false - Disabled. No monsters.
 	//
 	// If the player has major lag, it is recommended to turn this off/set to false.
-	SpawnMonsters bool `properties:"spawn-monsters"`
+	SpawnMonsters bool `properties:"spawn-monsters" json:"spawn_monsters,omitempty" yaml:"spawn_monsters"`
 
 	// Determines whether villagers can spawn.
 	// spawn-npcs
@@ -514,25 +514,25 @@ type ServerProperties struct {
 	//
 	// true - Enabled. Villagers spawn.
 	// false - Disabled. No villagers.
-	SpawnNPCs bool `properties:"spawn-npcs"`
+	SpawnNPCs bool `properties:"spawn-npcs" json:"spawn_np_cs,omitempty" yaml:"spawn_np_cs"`
 
 	// Determines the side length of the square spawn protection area as 2x+1. Setting this to 0 disables the spawn protection. A value of 1 protects a 3×3 square centered on the spawn point. 2 protects 5×5, 3 protects 7×7, etc. This option is not generated on the first server start and appears when the first player joins. If there are no ops set on the server, the spawn protection is disabled automatically as well.
 	// spawn-protection
 	// type: integer
 	// default: 16
-	SpawnProtection int `properties:"spawn-protection"`
+	SpawnProtection int `properties:"spawn-protection" json:"spawn_protection,omitempty" yaml:"spawn_protection"`
 
 	// Enables synchronous chunk writes.
 	// sync-chunk-writes
 	// type: boolean
 	// default: true
-	SyncChunkWrites bool `properties:"sync-chunk-writes"`
+	SyncChunkWrites bool `properties:"sync-chunk-writes" json:"sync_chunk_writes,omitempty" yaml:"sync_chunk_writes"`
 
 	// [more information needed]
 	// text-filtering-config
 	// type: string
 	// default: blank
-	TextFilteringConfig string `properties:"text-filtering-config"`
+	TextFilteringConfig string `properties:"text-filtering-config" json:"text_filtering_config,omitempty" yaml:"text_filtering_config"`
 
 	// Linux server performance improvements: optimized packet sending/receiving on Linux
 	// use-native-transport
@@ -541,7 +541,7 @@ type ServerProperties struct {
 	//
 	// true - Enabled. Enable Linux packet sending/receiving optimization
 	// false - Disabled. Disable Linux packet sending/receiving optimization
-	UseNativeTransport bool `properties:"use-native-transport"`
+	UseNativeTransport bool `properties:"use-native-transport" json:"use_native_transport,omitempty" yaml:"use_native_transport"`
 
 	// Sets the amount of world data the server sends the client, measured in chunks in each direction of the player (radius, not diameter). It determines the server-side viewing distance.
 	// view-distance
@@ -549,7 +549,7 @@ type ServerProperties struct {
 	// default: 10
 	//
 	// 10 is the default/recommended. If the player has major lag, this value is recommended to be reduced.
-	ViewDistance int `properties:"view-distance"`
+	ViewDistance int `properties:"view-distance" json:"view_distance,omitempty" yaml:"view_distance"`
 
 	// Enables a whitelist on the server.
 	// white-list
@@ -562,7 +562,7 @@ type ServerProperties struct {
 	// true - The file whitelist.json is used to generate the white list.
 	//
 	// Note: Ops are automatically whitelisted, and there is no need to add them to the whitelist.
-	WhiteList bool `properties:"white-list"`
+	WhiteList bool `properties:"white-list" json:"white_list,omitempty" yaml:"white_list"`
 }
 
 func WithMotd(m string) ServerConfig {

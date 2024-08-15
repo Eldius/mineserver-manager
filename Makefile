@@ -1,4 +1,7 @@
 
+TEST_SERVER ?= 192.168.0.42
+
+
 test:
 	go clean -cache
 	go test ./... -cover
@@ -24,5 +27,5 @@ release-local:
 	goreleaser release --clean --skip=publish
 
 put:
-	echo 'rm ~/.bin/mineserver' | sftp $(USER)@192.168.100.183
-	echo 'put ./dist/mineserver-cli_linux_arm64/mineserver .bin/' | sftp $(USER)@192.168.100.183
+	echo 'rm ~/.bin/mineserver' | sftp $(USER)@$(TEST_SERVER)
+	echo 'put ./dist/mineserver-cli_linux_arm64/mineserver .bin/' | sftp $(USER)@$(TEST_SERVER)

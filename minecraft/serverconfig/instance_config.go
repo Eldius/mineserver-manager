@@ -1,8 +1,10 @@
 package serverconfig
 
 import (
+	"bytes"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/minecraft/versions"
+	"gopkg.in/yaml.v3"
 	"path/filepath"
 )
 
@@ -20,6 +22,12 @@ func (o InstallOpts) AbsoluteDestPath() string {
 		return o.Dest
 	}
 	return d
+}
+
+func (o InstallOpts) ServerPropertiesString() string {
+	var buffer bytes.Buffer
+	_ = yaml.NewEncoder(&buffer).Encode(o.SrvProps)
+	return buffer.String()
 }
 
 type InstallOpt func(*InstallOpts) *InstallOpts
