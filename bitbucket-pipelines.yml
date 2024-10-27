@@ -11,8 +11,8 @@ definitions:
         name: Test code
         script:
           - go test ./... -cover
-    - step: &lint
-        name: Lint code
+    - step: &static_checks
+        name: Static checks
         image: golangci/golangci-lint:latest
         script:
           - golangci-lint run -v
@@ -38,7 +38,7 @@ pipelines:
   default:
     - parallel:
         - step: *test
-        - step: *lint
+        - step: *static_checks
 
   tags:
     'v*':
