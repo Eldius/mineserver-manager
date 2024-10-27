@@ -13,13 +13,9 @@ definitions:
           - go test ./... -cover
     - step: &lint
         name: Lint code
-        image: golangci/golangci-lint:v1.55.0
+        image: golangci/golangci-lint:latest
         script:
           - golangci-lint run -v
-    - step: &vulncheck
-        name: Vulnerabiliy check
-        image: golangci/golangci-lint:v1.55.0
-        script:
           - go install golang.org/x/vuln/cmd/govulncheck@latest
           - govulncheck ./...
     - step: &release
