@@ -63,6 +63,9 @@ func Install(ctx context.Context, dest string, v int, arch, osName string, timeo
 		err = fmt.Errorf("downloading java runtime to install: %w", err)
 		return "", err
 	}
+	defer func() {
+		_ = os.RemoveAll(filepath.Dir(jdkPackage))
+	}()
 
 	if err = utils.UnpackTarGZ(ctx, jdkPackage, dest); err != nil {
 		err = fmt.Errorf("unpacking jdk package: %w", err)
