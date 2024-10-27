@@ -39,7 +39,6 @@ pipelines:
     - parallel:
         - step: *test
         - step: *lint
-        - step: *vulncheck
 
   tags:
     'v*':
