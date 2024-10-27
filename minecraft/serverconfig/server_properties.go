@@ -3,6 +3,7 @@ package serverconfig
 import (
 	"fmt"
 	"github.com/eldius/properties"
+	"os"
 )
 
 const (
@@ -656,4 +657,18 @@ func GetServerProperties(cfgs ...ServerConfig) (*ServerProperties, error) {
 		resp = c(resp)
 	}
 	return resp, nil
+}
+
+func LoadFromFile(path string) (*ServerProperties, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		err = fmt.Errorf("opening file: %w", err)
+		return nil, err
+	}
+	var p ServerProperties
+	if err := properties.NewDecoder(f).Decode(&p); err != nil {
+		err = fmt.Errorf("parsing file: %w", err)
+		return nil, err
+	}
+	return &p, nil
 }

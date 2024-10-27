@@ -2,8 +2,10 @@ package minecraft
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/java"
@@ -140,7 +142,29 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 		log.With("error", err).ErrorContext(ctx, "Failed to create eula.txt file")
 		return err
 	}
+	if err := i.createVersionFile(ctx, cfg.AbsoluteDestPath(), *cfg); err != nil {
+		err = fmt.Errorf("creating version file: %w", err)
+		log.With("error", err).ErrorContext(ctx, "Failed to create versions.json file")
+		return err
+	}
 	return err
+}
+
+func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder string, opts serverconfig.InstallOpts) error {
+
+	versInfo := map[string]interface{}{
+		"java_version": opts.VersionInfo.JavaVersion.MajorVersion,
+		"mine_version": opts.VersionInfo.ID,
+		"cli_version":  config.GetVersionInfo(),
+	}
+
+	f, err := os.Create(filepath.Join(destFolder, "version.json"))
+	if err != nil {
+		err = fmt.Errorf("creating version.json file: %w", err)
+		return err
+	}
+
+	return json.NewEncoder(f).Encode(&versInfo)
 }
 
 // DownloadServer downloads server file
