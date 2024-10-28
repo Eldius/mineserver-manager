@@ -10,4 +10,6 @@ const (
 	AppDebugModePropKey   = "app.debugmode"
 
 	AppHomeDefaultValue = "~/.mineserver"
+
+	VersionsFileName = "versions.json"
 )

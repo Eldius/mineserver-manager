@@ -9,6 +9,7 @@ import (
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/java"
+	"github.com/eldius/mineserver-manager/minecraft/model"
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
 	"github.com/eldius/mineserver-manager/minecraft/versions"
 	"github.com/eldius/properties"
@@ -152,19 +153,23 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 
 func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder string, opts serverconfig.InstallOpts) error {
 
-	versInfo := map[string]interface{}{
-		"java_version": opts.VersionInfo.JavaVersion.MajorVersion,
-		"mine_version": opts.VersionInfo.ID,
-		"cli_version":  config.GetVersionInfo(),
-	}
-
-	f, err := os.Create(filepath.Join(destFolder, "version.json"))
+	f, err := os.Create(filepath.Join(destFolder, config.VersionsFileName))
 	if err != nil {
 		err = fmt.Errorf("creating version.json file: %w", err)
 		return err
 	}
 
-	return json.NewEncoder(f).Encode(&versInfo)
+	info := config.GetVersionInfo()
+
+	return json.NewEncoder(f).Encode(&model.VersionsInfo{
+		JavaVersion: opts.VersionInfo.JavaVersion.MajorVersion,
+		MineVersion: opts.VersionInfo.ID,
+		CliVersion: model.CliVersion{
+			Version:   info.Version,
+			Commit:    info.Commit,
+			BuildDate: info.BuildDate,
+		},
+	})
 }
 
 // DownloadServer downloads server file

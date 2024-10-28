@@ -59,3 +59,15 @@ func openDB() {
 		panic(err)
 	}
 }
+
+type CliVersion struct {
+	Version   string `json:"version"`
+	Commit    string `json:"commit"`
+	BuildDate string `json:"build_date"`
+}
+
+type VersionsInfo struct {
+	JavaVersion int        `json:"java_version"`
+	MineVersion string     `json:"mine_version"`
+	CliVersion  CliVersion `json:"cli_version"`
+}
