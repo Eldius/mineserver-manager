@@ -1,4 +1,4 @@
-package versions
+package mojang
 
 import (
 	"context"

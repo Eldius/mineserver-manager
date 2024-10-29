@@ -3,17 +3,17 @@ package minecraft
 import (
 	"context"
 	"fmt"
-	"github.com/eldius/mineserver-manager/minecraft/versions"
+	"github.com/eldius/mineserver-manager/minecraft/mojang"
 	"sort"
 	"time"
 )
 
 func ListVersions(ctx context.Context) error {
-	c := versions.NewClient(versions.WithTimeout(30 * time.Second))
+	c := mojang.NewClient(mojang.WithTimeout(30 * time.Second))
 
 	vers, err := c.ListVersions(ctx)
 	if err != nil {
-		err = fmt.Errorf("fetching versions from Mojang API: %w", err)
+		err = fmt.Errorf("fetching mojang from Mojang API: %w", err)
 		return err
 	}
 

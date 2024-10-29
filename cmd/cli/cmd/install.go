@@ -30,8 +30,8 @@ var installCmd = &cobra.Command{
 
 		if installOpts.JustListVersions {
 			if err := minecraft.ListVersions(ctx); err != nil {
-				err = fmt.Errorf("listing available versions: %w", err)
-				slog.With("error", err).ErrorContext(ctx, "failed to list available versions")
+				err = fmt.Errorf("listing available mojang: %w", err)
+				slog.With("error", err).ErrorContext(ctx, "failed to list available mojang")
 				panic(err)
 			}
 		} else {
@@ -65,6 +65,8 @@ type installCmdOpts struct {
 	RconPort    int
 	RconPass    string
 	RconEnabled bool
+
+	users []string
 }
 
 func (o installCmdOpts) ToServerPropertiesOpts() []serverconfig.InstallOpt {
@@ -90,6 +92,11 @@ func (o installCmdOpts) ToServerPropertiesOpts() []serverconfig.InstallOpt {
 		}
 		opts = append(opts, serverconfig.WithServerPropsRconEnabled(o.RconPort, passwd))
 	}
+
+	if len(o.users) > 0 {
+		opts = append(opts, serverconfig.WithWhitelistedUsers(o.users))
+	}
+
 	return opts
 }
 
@@ -103,7 +110,7 @@ func init() {
 	installCmd.Flags().StringVar(&installOpts.ServerVersion, "version", "latest", "Java Edition server version to be installed, ('latest' will install latest stable version)")
 	installCmd.Flags().StringVar(&installOpts.DestinationFolder, "dest", ".", "Installation root directory (defaults to current directory)")
 	installCmd.Flags().BoolVar(&installOpts.Headless, "headless", false, "Installation root directory (defaults to false)")
-	installCmd.Flags().BoolVar(&installOpts.JustListVersions, "list", false, "Lists available versions to install")
+	installCmd.Flags().BoolVar(&installOpts.JustListVersions, "list", false, "Lists available mojang to install")
 
 	installCmd.Flags().StringVar(&installOpts.Motd, "motd", "A Minecraft Server", "Server name (defaults to 'A Minecraft Server')")
 	installCmd.Flags().StringVar(&installOpts.LevelName, "level-name", "", "Level/map name")
@@ -114,6 +121,8 @@ func init() {
 
 	installCmd.Flags().IntVar(&installOpts.RconPort, "rcon-port", 25575, "RCON server port (defaults to 25565)")
 	installCmd.Flags().BoolVar(&installOpts.RconEnabled, "enable-rcon", false, "Enable RCON protocol")
+
+	installCmd.Flags().StringSliceVar(&installOpts.users, "whitelist-user", []string{}, "List of users to whitelist (optional)")
 
 	installCmd.Flags().Duration("download-timeout", 300*time.Second, "Download timeout configuration (defaults to 300s/5m)")
 	if err := viper.BindPFlag(config.AppInstallDownloadTimeoutPropKey, installCmd.Flags().Lookup("download-timeout")); err != nil {

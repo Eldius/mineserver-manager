@@ -1,4 +1,4 @@
-package versions
+package mojang
 
 import (
 	"fmt"
@@ -10,11 +10,12 @@ const (
 )
 
 const (
-	VersionsURL = "https://launchermeta.mojang.com/mc/game/version_manifest.json"
+	VersionsURL      = "https://launchermeta.mojang.com/mc/game/version_manifest.json"
+	UsersInfoBulkURL = "https://api.minecraftservices.com/minecraft/profile/lookup/bulk/byname"
 	//LatestVersion = "latest"
 )
 
-// VersionsResponse is a response for versions query
+// VersionsResponse is a response for mojang query
 type VersionsResponse struct {
 	Latest   Latest    `json:"latest"`
 	Versions []Version `json:"versions"`
@@ -88,4 +89,11 @@ func (r *VersionsResponse) GetVersion(v string) (*Version, error) {
 	}
 
 	return nil, fmt.Errorf("version '%s' not found", v)
+}
+
+type UserIDResponse []UserID
+
+type UserID struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
 }

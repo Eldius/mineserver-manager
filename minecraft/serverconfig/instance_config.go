@@ -3,17 +3,22 @@ package serverconfig
 import (
 	"bytes"
 	"github.com/eldius/mineserver-manager/internal/utils"
-	"github.com/eldius/mineserver-manager/minecraft/versions"
+	"github.com/eldius/mineserver-manager/minecraft/mojang"
 	"gopkg.in/yaml.v3"
 	"path/filepath"
 )
 
 type InstallOpts struct {
-	Start       *RuntimeParams
-	SrvProps    *ServerProperties
-	Dest        string
-	VersionName string
-	VersionInfo *versions.VersionInfoResponse
+	Start              *RuntimeParams
+	SrvProps           *ServerProperties
+	Dest               string
+	VersionName        string
+	VersionInfo        *mojang.VersionInfoResponse
+	WhitelistUsernames []string
+}
+
+func (o InstallOpts) HasWhitelist() bool {
+	return len(o.WhitelistUsernames) > 0
 }
 
 func (o InstallOpts) AbsoluteDestPath() string {
@@ -35,6 +40,16 @@ type InstallOpt func(*InstallOpts) *InstallOpts
 func WithVersion(v string) InstallOpt {
 	return func(c *InstallOpts) *InstallOpts {
 		c.VersionName = v
+		return c
+	}
+}
+
+func WithWhitelistedUsers(users []string) InstallOpt {
+	return func(c *InstallOpts) *InstallOpts {
+		if len(users) == 0 {
+			return c
+		}
+		c.WhitelistUsernames = users
 		return c
 	}
 }
@@ -68,11 +83,12 @@ func Headless() InstallOpt {
 
 func NewInstallOpts(cfgs ...InstallOpt) *InstallOpts {
 	cfg := &InstallOpts{
-		Start:       GetDefaultRuntimeParams(),
-		SrvProps:    utils.Must(GetDefaultServerProperties()),
-		Dest:        "./minecraft",
-		VersionName: "latest",
-		VersionInfo: nil,
+		Start:              GetDefaultRuntimeParams(),
+		SrvProps:           utils.Must(GetDefaultServerProperties()),
+		Dest:               "./minecraft",
+		VersionName:        "latest",
+		VersionInfo:        nil,
+		WhitelistUsernames: nil,
 	}
 
 	for _, c := range cfgs {

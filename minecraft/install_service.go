@@ -10,8 +10,8 @@ import (
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/java"
 	"github.com/eldius/mineserver-manager/minecraft/model"
+	"github.com/eldius/mineserver-manager/minecraft/mojang"
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
-	"github.com/eldius/mineserver-manager/minecraft/versions"
 	"github.com/eldius/properties"
 	"os"
 	"path/filepath"
@@ -33,7 +33,7 @@ type InstallServiceOpt func(config *InstallServiceConfig) *InstallServiceConfig
 
 type Installer interface {
 	Install(ctx context.Context, configs ...serverconfig.InstallOpt) error
-	DownloadServer(ctx context.Context, v versions.VersionInfoResponse, dest string) (string, error)
+	DownloadServer(ctx context.Context, v mojang.VersionInfoResponse, dest string) (string, error)
 	CreateStartScript(s serverconfig.RuntimeParams, dest string) error
 	CreateServerProperties(cfg *serverconfig.InstallOpts) error
 	Eula(dest string) (string, error)
@@ -41,9 +41,10 @@ type Installer interface {
 
 type vanillaInstaller struct {
 	cfg InstallServiceConfig
+	c   mojang.Client
 }
 
-// NewInstallService creates a new client
+// NewInstallService creates a new installer
 func NewInstallService(configs ...InstallServiceOpt) Installer {
 	cfg := &InstallServiceConfig{
 		Timeout: 30 * time.Second,
@@ -51,8 +52,10 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 	for _, c := range configs {
 		c(cfg)
 	}
+
 	return &vanillaInstaller{
 		cfg: *cfg,
+		c:   mojang.NewClient(mojang.WithTimeout(cfg.Timeout)),
 	}
 }
 
@@ -61,8 +64,6 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 	cfg := serverconfig.NewInstallOpts(configs...)
 
 	log := logger.GetLogger().With("action", "install_server", "version_name", cfg.VersionName)
-
-	c := versions.NewClient(versions.WithTimeout(i.cfg.Timeout))
 
 	if err := os.MkdirAll(cfg.AbsoluteDestPath(), os.ModePerm); err != nil {
 		if !errors.Is(err, os.ErrExist) {
@@ -74,7 +75,7 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 
 	fmt.Printf("#####################\nInstalling server\n----------------------\nversion: %s\nserver properties:\n%s\n#####################\n\n", cfg.VersionName, cfg.ServerPropertiesString())
 
-	ver, err := c.ListVersions(ctx)
+	ver, err := i.c.ListVersions(ctx)
 	if err != nil {
 		err = fmt.Errorf("getting available versions: %w", err)
 		log.With("error", err).ErrorContext(ctx, "Failed to list available versions")
@@ -83,14 +84,14 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 
 	v, err := ver.GetVersion(cfg.VersionName)
 	if err != nil {
-		err = fmt.Errorf("getting version from online versions list for name '%s': %w", cfg.VersionName, err)
+		err = fmt.Errorf("getting online versions list for name '%s': %w", cfg.VersionName, err)
 		log.With("error", err, "version", cfg.VersionName).ErrorContext(ctx, "Failed to get version for name")
 		return err
 	}
 
 	log = log.With("version", v.ID, "version_type", v.Type)
 
-	cfg.VersionInfo, err = c.GetVersionInfo(ctx, *v)
+	cfg.VersionInfo, err = i.c.GetVersionInfo(ctx, *v)
 	if err != nil {
 		err = fmt.Errorf("getting version info for name '%s': %w", cfg.VersionName, err)
 		log.With("error", err).ErrorContext(ctx, "Failed to fetch version info for '%s (%s)'", v.ID, cfg.VersionName)
@@ -148,7 +149,39 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 		log.With("error", err).ErrorContext(ctx, "Failed to create versions.json file")
 		return err
 	}
+
+	if err := i.createWhitelistFile(ctx, *cfg); err != nil {
+		err = fmt.Errorf("creating whitelist file: %w", err)
+		log.With("error", err).ErrorContext(ctx, "Failed to create whitelist.json file")
+		return err
+	}
+
 	return err
+}
+
+func (i *vanillaInstaller) createWhitelistFile(_ context.Context, opts serverconfig.InstallOpts) error {
+	if !opts.HasWhitelist() {
+		return nil
+	}
+
+	f, err := os.Create(filepath.Join(opts.Dest, "whitelist.json"))
+	if err != nil {
+		err = fmt.Errorf("creating whitelist file: %w", err)
+		return err
+	}
+
+	usrs, err := i.c.GetUsersInfo(opts.WhitelistUsernames...)
+	if err != nil {
+		err = fmt.Errorf("getting users info: %w", err)
+		return err
+	}
+
+	if err := json.NewEncoder(f).Encode(usrs); err != nil {
+		err = fmt.Errorf("writing whitelist file: %w", err)
+		return err
+	}
+
+	return nil
 }
 
 func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder string, opts serverconfig.InstallOpts) error {
@@ -173,7 +206,7 @@ func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder strin
 }
 
 // DownloadServer downloads server file
-func (i *vanillaInstaller) DownloadServer(ctx context.Context, v versions.VersionInfoResponse, dest string) (string, error) {
+func (i *vanillaInstaller) DownloadServer(ctx context.Context, v mojang.VersionInfoResponse, dest string) (string, error) {
 	destFile := filepath.Join(dest, utils.GetFileName(v.Downloads.Server.URL))
 	if err := utils.DownloadFile(ctx, i.cfg.DownloadTimeout, v.Downloads.Server.URL, destFile); err != nil {
 		err = fmt.Errorf("downloading server file: %w", err)

@@ -1,6 +1,7 @@
-package versions
+package mojang
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -14,6 +15,8 @@ type Client interface {
 	ListVersions(ctx context.Context) (*VersionsResponse, error)
 	// GetVersionInfo gets a specific version info
 	GetVersionInfo(ctx context.Context, v Version) (*VersionInfoResponse, error)
+	// GetUsersInfo fetch users identification
+	GetUsersInfo(users ...string) (UserIDResponse, error)
 }
 
 type ClientConfig struct {
@@ -44,13 +47,13 @@ func (c *apiClient) ListVersions(ctx context.Context) (*VersionsResponse, error)
 	client := c.httpClient()
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, VersionsURL, nil)
 	if err != nil {
-		err = fmt.Errorf("creating versions query request instance: %w", err)
+		err = fmt.Errorf("creating mojang query request instance: %w", err)
 		return nil, err
 	}
-	//res, err := client.Get(VersionsURL)
+	//res, err := mojang.Get(VersionsURL)
 	res, err := client.Do(r)
 	if err != nil {
-		err = fmt.Errorf("getting available versions: %w", err)
+		err = fmt.Errorf("getting available mojang: %w", err)
 		return nil, err
 	}
 	defer func() {
@@ -59,7 +62,7 @@ func (c *apiClient) ListVersions(ctx context.Context) (*VersionsResponse, error)
 
 	var versions VersionsResponse
 	if err = json.NewDecoder(res.Body).Decode(&versions); err != nil {
-		err = fmt.Errorf("decoding available versions response: %w", err)
+		err = fmt.Errorf("decoding available mojang response: %w", err)
 		return nil, err
 	}
 
@@ -74,7 +77,6 @@ func (c *apiClient) GetVersionInfo(ctx context.Context, v Version) (*VersionInfo
 		err = fmt.Errorf("getting version info for '%s': %w", v.ID, err)
 		return nil, err
 	}
-	//res, err := client.Get(v.URL)
 	res, err := client.Do(r)
 	if err != nil {
 		err = fmt.Errorf("getting version info: %w", err)
@@ -91,6 +93,32 @@ func (c *apiClient) GetVersionInfo(ctx context.Context, v Version) (*VersionInfo
 	}
 
 	return &version, nil
+}
+
+func (c *apiClient) GetUsersInfo(users ...string) (UserIDResponse, error) {
+	b, err := json.Marshal(users)
+	if err != nil {
+		err = fmt.Errorf("marshalling users info: %w", err)
+		return nil, err
+	}
+	client := c.httpClient()
+	buff := bytes.NewBuffer(b)
+	res, err := client.Post(UsersInfoBulkURL, "application/json", buff)
+	if err != nil {
+		err = fmt.Errorf("getting users info: %w", err)
+		return nil, err
+	}
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
+	var response UserIDResponse
+	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
+		err = fmt.Errorf("decoding users info response: %w", err)
+		return nil, err
+	}
+
+	return response, nil
 }
 
 func (c *apiClient) httpClient() http.Client {

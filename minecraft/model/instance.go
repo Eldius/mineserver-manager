@@ -71,3 +71,8 @@ type VersionsInfo struct {
 	MineVersion string     `json:"mine_version"`
 	CliVersion  CliVersion `json:"cli_version"`
 }
+
+type WhitelistRecord struct {
+	Uuid string `json:"uuid"`
+	Name string `json:"name"`
+}
