@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	initCfg "github.com/eldius/initial-config-go/configs"
 	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -14,8 +15,14 @@ var rootCmd = &cobra.Command{
 	Short: "A simple CLI tool to manage Minecraft server installations",
 	Long:  `A simple CLI tool to manage Minecraft server installations.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		config.Setup(cfgFile)
-		return nil
+		return initCfg.InitSetup("", initCfg.WithConfigFile(cfgFile), initCfg.WithDefaultValues(map[string]any{
+			config.AppMinecraftAPITimeoutPropKey:    "10s",
+			config.AppInstallDownloadTimeoutPropKey: "300s",
+			config.AppDebugModePropKey:              false,
+			config.AppRequestLogPropKey:             false,
+			config.AppInstallPathPropKey:            "./.tmp",
+			config.AppHomePathPropKey:               config.AppHomeDefaultValue,
+		}))
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

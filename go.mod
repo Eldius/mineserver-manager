@@ -4,10 +4,10 @@ go 1.23.2
 
 require (
 	github.com/asdine/storm/v3 v3.2.1
+	github.com/eldius/initial-config-go v0.0.0-20241106193716-81b576d54cc8
 	github.com/eldius/properties v0.0.2
 	github.com/google/uuid v1.6.0
 	github.com/h2non/gock v1.2.0
-	github.com/mitchellh/go-homedir v1.1.0
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
@@ -22,6 +22,7 @@ require (
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
