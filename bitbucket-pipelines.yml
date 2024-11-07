@@ -3,7 +3,7 @@
 #  This template allows you to validate your Go (Golang) code.
 #  The workflow allows running tests, build and code linting on the default branch.
 
-image: golang:1.23.2-alpine
+image: golang:1.23.3-alpine
 
 definitions:
   steps:
@@ -26,7 +26,7 @@ definitions:
         script:
           - go install github.com/goreleaser/goreleaser@latest
           - go install golang.org/x/vuln/cmd/govulncheck@latest
-          - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.55.0
+          - curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin latest
           - goreleaser release --skip=publish
           - pipe: atlassian/bitbucket-upload-file:0.6.0
             variables:
