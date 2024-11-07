@@ -15,14 +15,20 @@ var rootCmd = &cobra.Command{
 	Short: "A simple CLI tool to manage Minecraft server installations",
 	Long:  `A simple CLI tool to manage Minecraft server installations.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		return initCfg.InitSetup("", initCfg.WithConfigFile(cfgFile), initCfg.WithDefaultValues(map[string]any{
-			config.AppMinecraftAPITimeoutPropKey:    "10s",
-			config.AppInstallDownloadTimeoutPropKey: "300s",
-			config.AppDebugModePropKey:              false,
-			config.AppRequestLogPropKey:             false,
-			config.AppInstallPathPropKey:            "./.tmp",
-			config.AppHomePathPropKey:               config.AppHomeDefaultValue,
-		}))
+		return initCfg.InitSetup("", initCfg.WithConfigFileToBeUsed(cfgFile),
+			initCfg.WithDefaultCfgFileLocations("/.mineserver", "."),
+			initCfg.WithDefaultCfgFileName("config"),
+			initCfg.WithDefaultValues(map[string]any{
+				config.AppMinecraftAPITimeoutPropKey:    "10s",
+				config.AppInstallDownloadTimeoutPropKey: "300s",
+				config.AppDebugModePropKey:              false,
+				config.AppRequestLogPropKey:             false,
+				config.AppInstallPathPropKey:            "./.tmp",
+				config.AppHomePathPropKey:               config.AppHomeDefaultValue,
+				initCfg.LogLevelKey:                     initCfg.LogLevelDEBUG,
+				initCfg.LogFormatKey:                    initCfg.LogFormatJSON,
+				initCfg.LogOutputToStdoutKey:            true,
+			}))
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

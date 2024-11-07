@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/config"
+	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/minecraft/model"
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
 	"github.com/eldius/properties"
@@ -18,7 +19,10 @@ import (
 )
 
 type BackupService interface {
+	// Backup creates a new backup from instance
 	Backup(ctx context.Context, instancePath, backupDestFolder string) (string, error)
+	// Restore restores a backup file to instance
+	Restore(ctx context.Context, instancePath, backupDestFolder string) error
 }
 
 type backupService struct {
@@ -34,15 +38,21 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 		slog.String("instance_path", instancePath),
 		slog.String("backup_dest_folder", backupDestPath),
 	)
+	fmt.Printf("is it nil? %+v\n", log)
+	fmt.Printf("is it nil? (2) %p\n", log)
+
+	fmt.Printf("is it nil? %+v\n", ctx)
+	fmt.Printf("is it nil? (2) %p\n", ctx)
+
 	log.InfoContext(ctx, "starting backup process")
 
-	instancePath, err := filepath.Abs(instancePath)
+	instancePath, err := utils.AbsolutePath(instancePath)
 	if err != nil {
-		err = fmt.Errorf("parsing instance instancePath: %w", err)
+		err = fmt.Errorf("parsing to absolute path: %w", err)
 		return "", err
 	}
 
-	backupDestPath, err = filepath.Abs(backupDestPath)
+	backupDestPath, err = utils.AbsolutePath(backupDestPath)
 	if err != nil {
 		err = fmt.Errorf("parsing backupDestPath: %w", err)
 		return "", err
@@ -158,6 +168,10 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 	}
 
 	return destFile, nil
+}
+
+func (s *backupService) Restore(ctx context.Context, instancePath, backupDestFolder string) error {
+	return nil
 }
 
 func createZipFile(_ context.Context, destFile string, files []fileToBackup) error {

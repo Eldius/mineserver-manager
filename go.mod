@@ -1,10 +1,10 @@
 module github.com/eldius/mineserver-manager
 
-go 1.23.2
+go 1.23.3
 
 require (
 	github.com/asdine/storm/v3 v3.2.1
-	github.com/eldius/initial-config-go v0.0.0-20241106193716-81b576d54cc8
+	github.com/eldius/initial-config-go v0.0.0-20241107193444-1698a25e2839
 	github.com/eldius/properties v0.0.2
 	github.com/google/uuid v1.6.0
 	github.com/h2non/gock v1.2.0
@@ -37,7 +37,7 @@ require (
 	go.etcd.io/bbolt v1.3.4 // indirect
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
-	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
+	golang.org/x/exp v0.0.0-20241009180824-f66d83c29e7c // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect

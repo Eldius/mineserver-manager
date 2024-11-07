@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"os/user"
 	"path/filepath"
 	"strings"
 	"time"
@@ -205,4 +206,24 @@ func PasswordPrompt() (string, error) {
 	password := string(bytePassword)
 
 	return strings.TrimSpace(password), nil
+}
+
+func ExpandPath(path string) (string, error) {
+	if len(path) == 0 || path[0] != '~' {
+		return path, nil
+	}
+
+	usr, err := user.Current()
+	if err != nil {
+		return "", err
+	}
+	return filepath.Join(usr.HomeDir, path[1:]), nil
+}
+
+func AbsolutePath(path string) (string, error) {
+	path, err := ExpandPath(path)
+	if err != nil {
+		return "", fmt.Errorf("expanded path: %w", err)
+	}
+	return filepath.Abs(path)
 }
