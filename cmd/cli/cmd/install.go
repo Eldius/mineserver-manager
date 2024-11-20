@@ -36,7 +36,7 @@ var installCmd = &cobra.Command{
 			}
 		} else {
 			opts := append(
-				installOpts.ToServerPropertiesOpts(),
+				installOpts.ToInstanceOpts(),
 				serverconfig.WithVersion(installOpts.ServerVersion),
 				serverconfig.ToDestinationFolder(installOpts.DestinationFolder),
 				serverconfig.WithHeadlessConfig(installOpts.Headless),
@@ -62,6 +62,8 @@ type installCmdOpts struct {
 	ServerPort int
 	QueryPort  int
 
+	MemoryLimit string
+
 	RconPort    int
 	RconPass    string
 	RconEnabled bool
@@ -69,8 +71,8 @@ type installCmdOpts struct {
 	users []string
 }
 
-func (o installCmdOpts) ToServerPropertiesOpts() []serverconfig.InstallOpt {
-	var opts []serverconfig.InstallOpt
+func (o installCmdOpts) ToInstanceOpts() []serverconfig.InstanceOpt {
+	opts := []serverconfig.InstanceOpt{serverconfig.WithMemoryLimit(o.MemoryLimit)}
 	if o.Motd != "" {
 		opts = append(opts, serverconfig.WithServerPropsMotd(o.Motd))
 	}
@@ -111,6 +113,7 @@ func init() {
 	installCmd.Flags().StringVar(&installOpts.DestinationFolder, "dest", ".", "Installation root directory (defaults to current directory)")
 	installCmd.Flags().BoolVar(&installOpts.Headless, "headless", false, "Installation root directory (defaults to false)")
 	installCmd.Flags().BoolVar(&installOpts.JustListVersions, "list", false, "Lists available mojang to install")
+	installCmd.Flags().StringVar(&installOpts.MemoryLimit, "memory-limit", "1g", "Server memory limit")
 
 	installCmd.Flags().StringVar(&installOpts.Motd, "motd", "A Minecraft Server", "Server name (defaults to 'A Minecraft Server')")
 	installCmd.Flags().StringVar(&installOpts.LevelName, "level-name", "", "Level/map name")

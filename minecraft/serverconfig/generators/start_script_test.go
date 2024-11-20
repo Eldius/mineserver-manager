@@ -1,4 +1,4 @@
-package helper
+package generators
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -7,7 +7,7 @@ import (
 
 func TestGenerateScript(t *testing.T) {
 	t.Run("headless default", func(t *testing.T) {
-		script, err := StartScriptGenerator{}.Generate(
+		script, err := StartScript(
 			WithJDKPath("/tmp/java/jdk"),
 			WithMemLimit("1G"),
 			WithServerFile("my-server-123.jar"),
@@ -22,7 +22,7 @@ func TestGenerateScript(t *testing.T) {
 		assert.Contains(t, script, "--nogui")
 	})
 	t.Run("not headless default", func(t *testing.T) {
-		script, err := StartScriptGenerator{}.Generate(
+		script, err := StartScript(
 			WithJDKPath("/tmp/java/jdk-123"),
 			WithMemLimit("500m"),
 			WithServerFile("my-server-456.jar"),

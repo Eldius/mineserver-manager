@@ -1,4 +1,4 @@
-package helper
+package generators
 
 import (
 	"bytes"
@@ -16,7 +16,6 @@ type StartupOptions struct {
 	ServerFile    string
 	JDKPath       string
 	MemLimit      string
-	PIDFile       string
 	LogConfigFile bool
 	Headless      bool
 }
@@ -53,28 +52,14 @@ func WithHeadless(headless bool) Option {
 	}
 }
 
-func WithPIDFile(pidFile string) Option {
-	return func(o *StartupOptions) {
-		if pidFile != "" {
-			o.PIDFile = pidFile
-		}
-	}
-}
-
 func WithLogConfigFile(logConfigFile bool) Option {
 	return func(o *StartupOptions) {
 		o.LogConfigFile = logConfigFile
 	}
 }
 
-type StartScriptGenerator struct{}
-
-func NewStartScriptGenerator() StartScriptGenerator {
-	return StartScriptGenerator{}
-}
-
-func (s StartScriptGenerator) Generate(opts ...Option) (string, error) {
-	options := &StartupOptions{}
+func StartScript(opts ...Option) (string, error) {
+	options := defaultStartupOptions()
 	for _, o := range opts {
 		o(options)
 	}
@@ -88,4 +73,10 @@ func (s StartScriptGenerator) Generate(opts ...Option) (string, error) {
 		return "", fmt.Errorf("generating start script: %w", err)
 	}
 	return b.String(), nil
+}
+
+func defaultStartupOptions() *StartupOptions {
+	return &StartupOptions{
+		ServerFile: "server.jar",
+	}
 }

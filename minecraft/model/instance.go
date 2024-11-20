@@ -5,6 +5,7 @@ import (
 	"github.com/asdine/storm/v3"
 	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
+	"github.com/eldius/mineserver-manager/minecraft/serverconfig/generators"
 	"github.com/google/uuid"
 	"time"
 )
@@ -23,11 +24,11 @@ type Instance struct {
 	Name             string `storm:"unique"`
 	Path             string `storm:"unique"`
 	InstallDate      time.Time
-	RuntimeParams    serverconfig.RuntimeParams
+	RuntimeParams    generators.RuntimeGenerator
 	ServerProperties serverconfig.ServerProperties
 }
 
-func NewInstance(name, path string, runtimeParams serverconfig.RuntimeParams, serverProperties serverconfig.ServerProperties) *Instance {
+func NewInstance(name, path string, runtimeParams generators.RuntimeGenerator, serverProperties serverconfig.ServerProperties) *Instance {
 	return &Instance{
 		ID:               uuid.New().String(),
 		Name:             name,

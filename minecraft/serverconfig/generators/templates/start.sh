@@ -33,5 +33,5 @@ cd "${INSTALL_PATH}" || exit 1
   -jar {{ .ServerFile }} {{ if .Headless }} --nogui {{ end }} &
 
 PID=$!
-echo $PID > {{ .PIDFile }}
+echo $PID > ${INSTALL_PATH}/server.pid
 echo "starting server with PID: $PID"

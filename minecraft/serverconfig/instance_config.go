@@ -8,20 +8,22 @@ import (
 	"path/filepath"
 )
 
-type InstallOpts struct {
-	Start              *RuntimeParams
+type InstanceOpts struct {
 	SrvProps           *ServerProperties
+	VersionInfo        *mojang.VersionInfoResponse
 	Dest               string
 	VersionName        string
-	VersionInfo        *mojang.VersionInfoResponse
 	WhitelistUsernames []string
+	MemoryOpt          string
+	AddLogConfig       bool
+	Headless           bool
 }
 
-func (o InstallOpts) HasWhitelist() bool {
+func (o InstanceOpts) HasWhitelist() bool {
 	return len(o.WhitelistUsernames) > 0
 }
 
-func (o InstallOpts) AbsoluteDestPath() string {
+func (o InstanceOpts) AbsoluteDestPath() string {
 	d, err := filepath.Abs(o.Dest)
 	if err != nil {
 		return o.Dest
@@ -29,104 +31,95 @@ func (o InstallOpts) AbsoluteDestPath() string {
 	return d
 }
 
-func (o InstallOpts) ServerPropertiesString() string {
+func (o InstanceOpts) ServerPropertiesString() string {
 	var buffer bytes.Buffer
 	_ = yaml.NewEncoder(&buffer).Encode(o.SrvProps)
 	return buffer.String()
 }
 
-type InstallOpt func(*InstallOpts) *InstallOpts
+type InstanceOpt func(*InstanceOpts)
 
-func WithVersion(v string) InstallOpt {
-	return func(c *InstallOpts) *InstallOpts {
+func WithVersion(v string) InstanceOpt {
+	return func(c *InstanceOpts) {
 		c.VersionName = v
-		return c
 	}
 }
 
-func WithWhitelistedUsers(users []string) InstallOpt {
-	return func(c *InstallOpts) *InstallOpts {
+func WithWhitelistedUsers(users []string) InstanceOpt {
+	return func(c *InstanceOpts) {
 		if len(users) == 0 {
-			return c
+			return
 		}
 		c.WhitelistUsernames = users
-		return c
 	}
 }
 
-func ToDestinationFolder(t string) InstallOpt {
-	return func(c *InstallOpts) *InstallOpts {
+func ToDestinationFolder(t string) InstanceOpt {
+	return func(c *InstanceOpts) {
 		c.Dest = t
-		return c
 	}
 }
 
-func WithHeadlessConfig(headless bool) InstallOpt {
-	return func(c *InstallOpts) *InstallOpts {
-		if c.Start == nil {
-			c.Start = GetDefaultRuntimeParams()
-		}
-		c.Start.Headless = headless
-		return c
+func WithHeadlessConfig(headless bool) InstanceOpt {
+	return func(c *InstanceOpts) {
+		c.Headless = headless
 	}
 }
 
-func Headless() InstallOpt {
-	return func(c *InstallOpts) *InstallOpts {
-		if c.Start == nil {
-			c.Start = GetDefaultRuntimeParams()
-		}
-		c.Start.Headless = true
-		return c
+func Headless() InstanceOpt {
+	return func(c *InstanceOpts) {
+		c.Headless = true
 	}
 }
 
-func NewInstallOpts(cfgs ...InstallOpt) *InstallOpts {
-	cfg := &InstallOpts{
-		Start:              GetDefaultRuntimeParams(),
+func WithMemoryLimit(memory string) InstanceOpt {
+	return func(c *InstanceOpts) {
+		c.MemoryOpt = memory
+	}
+}
+
+func NewInstanceOpts(cfgs ...InstanceOpt) *InstanceOpts {
+	cfg := &InstanceOpts{
 		SrvProps:           utils.Must(GetDefaultServerProperties()),
 		Dest:               "./minecraft",
 		VersionName:        "latest",
+		MemoryOpt:          "1g",
 		VersionInfo:        nil,
 		WhitelistUsernames: nil,
 	}
 
 	for _, c := range cfgs {
-		cfg = c(cfg)
+		c(cfg)
 	}
 	return cfg
 }
 
-func WithServerPropsMotd(m string) InstallOpt {
-	return func(s *InstallOpts) *InstallOpts {
+func WithServerPropsMotd(m string) InstanceOpt {
+	return func(s *InstanceOpts) {
 		s.SrvProps.Motd = m
-		return s
 	}
 }
 
-func WithServerPropsLevelName(n string) InstallOpt {
-	return func(s *InstallOpts) *InstallOpts {
+func WithServerPropsLevelName(n string) InstanceOpt {
+	return func(s *InstanceOpts) {
 		s.SrvProps.LevelName = n
-		return s
 	}
 }
 
-func WithServerPropsServerPort(p int) InstallOpt {
-	return func(s *InstallOpts) *InstallOpts {
+func WithServerPropsServerPort(p int) InstanceOpt {
+	return func(s *InstanceOpts) {
 		s.SrvProps.ServerPort = p
-		return s
 	}
 }
 
 // WithServerPropsRconEnabled enables RCON protocol configuration
 // 'port' to be used for this protocol
 // 'pass' define the RCON password
-func WithServerPropsRconEnabled(port int, pass string) InstallOpt {
-	return func(s *InstallOpts) *InstallOpts {
+func WithServerPropsRconEnabled(port int, pass string) InstanceOpt {
+	return func(s *InstanceOpts) {
 		s.SrvProps.RconPort = port
 		s.SrvProps.EnableRcon = true
 		s.SrvProps.RconPassword = pass
-		return s
 	}
 }
 
@@ -134,30 +127,27 @@ func WithServerPropsRconEnabled(port int, pass string) InstallOpt {
 // 'port' to be used for this protocol
 // 'enabled' is to enable/disable feature
 // 'pass' define the RCON password
-func WithServerPropsRcon(port int, enabled bool, pass string) InstallOpt {
-	return func(s *InstallOpts) *InstallOpts {
+func WithServerPropsRcon(port int, enabled bool, pass string) InstanceOpt {
+	return func(s *InstanceOpts) {
 		s.SrvProps.RconPort = port
 		s.SrvProps.EnableRcon = enabled
 		s.SrvProps.RconPassword = pass
-		return s
 	}
 }
 
 // WithServerPropsQuery defines Query protocol configuration
 // 'port' to be used for this protocol
 // 'enabled' is to enable/disable feature
-func WithServerPropsQuery(port int, enabled bool) InstallOpt {
-	return func(s *InstallOpts) *InstallOpts {
+func WithServerPropsQuery(port int, enabled bool) InstanceOpt {
+	return func(s *InstanceOpts) {
 		s.SrvProps.QueryPort = port
 		s.SrvProps.EnableQuery = enabled
-		return s
 	}
 }
 
 // WithServerPropsSeed defines level seed
-func WithServerPropsSeed(seed string) InstallOpt {
-	return func(s *InstallOpts) *InstallOpts {
+func WithServerPropsSeed(seed string) InstanceOpt {
+	return func(s *InstanceOpts) {
 		s.SrvProps.LevelSeed = seed
-		return s
 	}
 }
