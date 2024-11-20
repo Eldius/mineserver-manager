@@ -9,6 +9,7 @@ import (
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/java"
+	"github.com/eldius/mineserver-manager/minecraft/helper"
 	"github.com/eldius/mineserver-manager/minecraft/model"
 	"github.com/eldius/mineserver-manager/minecraft/mojang"
 	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
@@ -238,6 +239,7 @@ func (i *vanillaInstaller) CreateServerProperties(cfg *serverconfig.InstallOpts)
 
 // CreateStartScript generates the start script
 func (i *vanillaInstaller) CreateStartScript(s serverconfig.RuntimeParams, dest string) error {
+
 	destFile := filepath.Join(dest, serverconfig.StartScriptFileName)
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
@@ -246,13 +248,17 @@ func (i *vanillaInstaller) CreateStartScript(s serverconfig.RuntimeParams, dest 
 		return err
 	}
 
-	scp, err := s.RenderStartScript()
-	if err != nil {
-		err = fmt.Errorf("generating start script content: %w", err)
-		return err
-	}
+	script, err := helper.NewStartScriptGenerator().
+		Generate(
+			helper.WithHeadless(s.Headless),
+			helper.WithJDKPath("${INSTALL_PATH}/java/jdk/bin"),
+			helper.WithMemLimit(s.Xmx),
+			helper.WithServerFile("server.jar"),
+			helper.WithPIDFile("server.pid"),
+			helper.WithLogConfigFile(s.LogConfigFile),
+		)
 
-	if _, err := f.Write([]byte(scp)); err != nil {
+	if _, err := f.Write([]byte(script)); err != nil {
 		err = fmt.Errorf("writing start script to file: %w", err)
 		return err
 	}
