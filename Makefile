@@ -20,6 +20,9 @@ vulncheck:
 lint:
 	golangci-lint run
 
+validate: test lint vulncheck
+	@echo "Validate finished."
+
 snapshot-local:
 	goreleaser release --snapshot --clean
 

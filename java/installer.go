@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
-	utils "github.com/eldius/mineserver-manager/internal/utils"
+	"github.com/eldius/mineserver-manager/utils"
 	"log/slog"
 	"os"
 	"path/filepath"

@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/utils"
+	"github.com/eldius/mineserver-manager/utils"
 	"net/http"
 	"time"
 )
