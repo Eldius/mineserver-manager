@@ -1,4 +1,4 @@
-package generators
+package config
 
 import (
 	"github.com/stretchr/testify/assert"

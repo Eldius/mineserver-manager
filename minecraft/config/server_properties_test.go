@@ -1,4 +1,4 @@
-package serverconfig
+package config
 
 import (
 	"github.com/stretchr/testify/assert"
@@ -7,7 +7,7 @@ import (
 
 func TestGetDefaultServerProperties(t *testing.T) {
 
-	p, err := GetDefaultServerProperties()
+	p, err := DefaultServerProperties()
 	assert.Nil(t, err)
 
 	assert.True(t, p.AllowNether)

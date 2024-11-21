@@ -1,4 +1,4 @@
-package serverconfig
+package config
 
 import (
 	"bytes"
@@ -80,7 +80,7 @@ func WithMemoryLimit(memory string) InstanceOpt {
 
 func NewInstanceOpts(cfgs ...InstanceOpt) *InstanceOpts {
 	cfg := &InstanceOpts{
-		SrvProps:           utils.Must(GetDefaultServerProperties()),
+		SrvProps:           utils.Must(DefaultServerProperties()),
 		Dest:               "./minecraft",
 		VersionName:        "latest",
 		MemoryOpt:          "1g",

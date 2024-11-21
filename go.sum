@@ -9,8 +9,8 @@ github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSs
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc h1:U9qPSI2PIWSS1VwoXQT9A3Wy9MM3WgvqSxFWenqJduM=
 github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/eldius/initial-config-go v0.0.0-20241107193444-1698a25e2839 h1:+LjC8DF8VH4XPf41DXcyPzJb3CcAgSZUJfpRi/wDjHk=
-github.com/eldius/initial-config-go v0.0.0-20241107193444-1698a25e2839/go.mod h1:X486rzlDEYbod/P12CUopfzb9fgZhKilIT9ak2AD57U=
+github.com/eldius/initial-config-go v0.0.2 h1:/TvMyBfWCXA9KPfzmjybnaDQskqbmWYoHqnXmWQZX9w=
+github.com/eldius/initial-config-go v0.0.2/go.mod h1:nrnraUmbXVHWtYdA7MgbGBRmM1sbM2KD5Rb9EPgybWA=
 github.com/eldius/properties v0.0.2 h1:mzJLoFKA62Cua7aiz4b5VUwl7uiKGloYMnY1p6+FcJs=
 github.com/eldius/properties v0.0.2/go.mod h1:Zs1P6CRYIP7tEaS07hC2BRXyE4kg5gyCoWhI+YbyyMw=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=

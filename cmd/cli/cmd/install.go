@@ -4,11 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/config"
+	cfg "github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/minecraft"
-	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
+	"github.com/eldius/mineserver-manager/minecraft/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"log/slog"
@@ -24,8 +24,8 @@ var installCmd = &cobra.Command{
 		logger.GetLogger().With("headless", installOpts.Headless).Info("debugging")
 		ctx := context.Background()
 		client := minecraft.NewInstallService(minecraft.WithTimeout(
-			config.GetMinecraftApiTimeout()),
-			minecraft.WithDownloadTimeout(config.GetMinecraftDownloadTimeout()),
+			cfg.GetMinecraftApiTimeout()),
+			minecraft.WithDownloadTimeout(cfg.GetMinecraftDownloadTimeout()),
 		)
 
 		if installOpts.JustListVersions {
@@ -37,9 +37,9 @@ var installCmd = &cobra.Command{
 		} else {
 			opts := append(
 				installOpts.ToInstanceOpts(),
-				serverconfig.WithVersion(installOpts.ServerVersion),
-				serverconfig.ToDestinationFolder(installOpts.DestinationFolder),
-				serverconfig.WithHeadlessConfig(installOpts.Headless),
+				config.WithVersion(installOpts.ServerVersion),
+				config.ToDestinationFolder(installOpts.DestinationFolder),
+				config.WithHeadlessConfig(installOpts.Headless),
 			)
 			if err := client.Install(ctx, opts...); err != nil {
 				err = fmt.Errorf("installing server: %w", err)
@@ -71,16 +71,16 @@ type installCmdOpts struct {
 	users []string
 }
 
-func (o installCmdOpts) ToInstanceOpts() []serverconfig.InstanceOpt {
-	opts := []serverconfig.InstanceOpt{serverconfig.WithMemoryLimit(o.MemoryLimit)}
+func (o installCmdOpts) ToInstanceOpts() []config.InstanceOpt {
+	opts := []config.InstanceOpt{config.WithMemoryLimit(o.MemoryLimit)}
 	if o.Motd != "" {
-		opts = append(opts, serverconfig.WithServerPropsMotd(o.Motd))
+		opts = append(opts, config.WithServerPropsMotd(o.Motd))
 	}
 	if o.LevelName != "" {
-		opts = append(opts, serverconfig.WithServerPropsLevelName(o.LevelName))
+		opts = append(opts, config.WithServerPropsLevelName(o.LevelName))
 	}
 	if o.Seed != "" {
-		opts = append(opts, serverconfig.WithServerPropsSeed(o.Seed))
+		opts = append(opts, config.WithServerPropsSeed(o.Seed))
 	}
 	if o.RconEnabled {
 		passwd, err := utils.PasswordPrompt()
@@ -92,11 +92,11 @@ func (o installCmdOpts) ToInstanceOpts() []serverconfig.InstanceOpt {
 			err = errors.New("RCON password mustn't be empty when RCON is enabled")
 			panic(err)
 		}
-		opts = append(opts, serverconfig.WithServerPropsRconEnabled(o.RconPort, passwd))
+		opts = append(opts, config.WithServerPropsRconEnabled(o.RconPort, passwd))
 	}
 
 	if len(o.users) > 0 {
-		opts = append(opts, serverconfig.WithWhitelistedUsers(o.users))
+		opts = append(opts, config.WithWhitelistedUsers(o.users))
 	}
 
 	return opts
@@ -128,7 +128,7 @@ func init() {
 	installCmd.Flags().StringSliceVar(&installOpts.users, "whitelist-user", []string{}, "List of users to whitelist (optional)")
 
 	installCmd.Flags().Duration("download-timeout", 300*time.Second, "Download timeout configuration (defaults to 300s/5m)")
-	if err := viper.BindPFlag(config.AppInstallDownloadTimeoutPropKey, installCmd.Flags().Lookup("download-timeout")); err != nil {
+	if err := viper.BindPFlag(cfg.AppInstallDownloadTimeoutPropKey, installCmd.Flags().Lookup("download-timeout")); err != nil {
 		err = fmt.Errorf("binding artifact download timeout property: %w", err)
 		panic(err)
 	}

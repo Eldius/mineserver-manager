@@ -5,14 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/config"
+	cfg "github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/eldius/mineserver-manager/java"
+	"github.com/eldius/mineserver-manager/minecraft/config"
 	"github.com/eldius/mineserver-manager/minecraft/model"
 	"github.com/eldius/mineserver-manager/minecraft/mojang"
-	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
-	"github.com/eldius/mineserver-manager/minecraft/serverconfig/generators"
 	"github.com/eldius/properties"
 	"os"
 	"path/filepath"
@@ -25,7 +24,7 @@ var (
 )
 
 type InstallServiceConfig struct {
-	Instance        *serverconfig.InstanceOpts
+	Instance        *config.InstanceOpts
 	Timeout         time.Duration
 	DownloadTimeout time.Duration
 	TargetFolder    string
@@ -34,10 +33,10 @@ type InstallServiceConfig struct {
 type InstallServiceOpt func(config *InstallServiceConfig)
 
 type Installer interface {
-	Install(ctx context.Context, configs ...serverconfig.InstanceOpt) error
+	Install(ctx context.Context, configs ...config.InstanceOpt) error
 	DownloadServer(ctx context.Context, v mojang.VersionInfoResponse, dest string) (string, error)
-	CreateStartScript(cfg *serverconfig.InstanceOpts) error
-	CreateServerProperties(cfg *serverconfig.InstanceOpts) error
+	CreateStartScript(cfg *config.InstanceOpts) error
+	CreateServerProperties(cfg *config.InstanceOpts) error
 	Eula(dest string) (string, error)
 }
 
@@ -62,8 +61,8 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 }
 
 // Install installs selected version
-func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.InstanceOpt) error {
-	cfg := serverconfig.NewInstanceOpts(configs...)
+func (i *vanillaInstaller) Install(ctx context.Context, configs ...config.InstanceOpt) error {
+	cfg := config.NewInstanceOpts(configs...)
 
 	log := logger.GetLogger().With("action", "install_server", "version_name", cfg.VersionName)
 
@@ -161,7 +160,7 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...serverconfig.
 	return err
 }
 
-func (i *vanillaInstaller) createWhitelistFile(_ context.Context, opts serverconfig.InstanceOpts) error {
+func (i *vanillaInstaller) createWhitelistFile(_ context.Context, opts config.InstanceOpts) error {
 	if !opts.HasWhitelist() {
 		return nil
 	}
@@ -186,15 +185,15 @@ func (i *vanillaInstaller) createWhitelistFile(_ context.Context, opts servercon
 	return nil
 }
 
-func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder string, opts serverconfig.InstanceOpts) error {
+func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder string, opts config.InstanceOpts) error {
 
-	f, err := os.Create(filepath.Join(destFolder, config.VersionsFileName))
+	f, err := os.Create(filepath.Join(destFolder, cfg.VersionsFileName))
 	if err != nil {
 		err = fmt.Errorf("creating version.json file: %w", err)
 		return err
 	}
 
-	info := config.GetVersionInfo()
+	info := cfg.GetVersionInfo()
 
 	return json.NewEncoder(f).Encode(&model.VersionsInfo{
 		JavaVersion: opts.VersionInfo.JavaVersion.MajorVersion,
@@ -222,7 +221,7 @@ func (i *vanillaInstaller) DownloadServer(ctx context.Context, v mojang.VersionI
 	return destFile, nil
 }
 
-func (i *vanillaInstaller) CreateServerProperties(cfg *serverconfig.InstanceOpts) error {
+func (i *vanillaInstaller) CreateServerProperties(cfg *config.InstanceOpts) error {
 	destFile := filepath.Join(cfg.AbsoluteDestPath(), "server.properties")
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -239,9 +238,9 @@ func (i *vanillaInstaller) CreateServerProperties(cfg *serverconfig.InstanceOpts
 }
 
 // CreateStartScript generates the start script
-func (i *vanillaInstaller) CreateStartScript(cfg *serverconfig.InstanceOpts) error {
+func (i *vanillaInstaller) CreateStartScript(cfg *config.InstanceOpts) error {
 
-	destFile := filepath.Join(cfg.AbsoluteDestPath(), generators.StartScriptFileName)
+	destFile := filepath.Join(cfg.AbsoluteDestPath(), config.StartScriptFileName)
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -249,13 +248,17 @@ func (i *vanillaInstaller) CreateStartScript(cfg *serverconfig.InstanceOpts) err
 		return err
 	}
 
-	script, err := generators.StartScript(
-		generators.WithHeadless(cfg.Headless),
-		generators.WithJDKPath("${INSTALL_PATH}/java/jdk/bin"),
-		generators.WithMemLimit(cfg.MemoryOpt),
-		generators.WithServerFile("server.jar"),
-		generators.WithLogConfigFile(cfg.AddLogConfig),
+	script, err := config.StartScript(
+		config.WithHeadless(cfg.Headless),
+		config.WithJDKPath("${INSTALL_PATH}/java/jdk/bin"),
+		config.WithMemLimit(cfg.MemoryOpt),
+		config.WithServerFile("server.jar"),
+		config.WithLogConfigFile(cfg.AddLogConfig),
 	)
+	if err != nil {
+		err = fmt.Errorf("creating server startup script: %w", err)
+		return err
+	}
 
 	if _, err := f.Write([]byte(script)); err != nil {
 		err = fmt.Errorf("writing start script to file: %w", err)
@@ -266,7 +269,7 @@ func (i *vanillaInstaller) CreateStartScript(cfg *serverconfig.InstanceOpts) err
 
 // CreateStopScript generates the stop server script
 func (i *vanillaInstaller) CreateStopScript(dest string) error {
-	destFile := filepath.Join(dest, generators.StopScriptFileName)
+	destFile := filepath.Join(dest, config.StopScriptFileName)
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -274,7 +277,7 @@ func (i *vanillaInstaller) CreateStopScript(dest string) error {
 		return err
 	}
 
-	scp, err := generators.StopScript()
+	scp, err := config.StopScript()
 	if err != nil {
 		err = fmt.Errorf("generating stop script content: %w", err)
 		return err
@@ -295,7 +298,7 @@ func (i *vanillaInstaller) CreateLoggingConfig(dest string) error {
 		return err
 	}
 
-	logf, err := generators.LoggingConfiguration(dest)
+	logf, err := config.LoggingConfiguration(dest)
 	if err != nil {
 		err = fmt.Errorf("generating logging configuration file content: %w", err)
 		return err
@@ -315,7 +318,7 @@ func (i *vanillaInstaller) Eula(dest string) (string, error) {
 		err = fmt.Errorf("creating eula file: %w", err)
 		return "", err
 	}
-	if err := properties.NewEncoder(f).Encode(serverconfig.DefaultEulaValue); err != nil {
+	if err := properties.NewEncoder(f).Encode(config.DefaultEulaValue); err != nil {
 		err = fmt.Errorf("writing eula contents to file: %w", err)
 		return "", err
 	}
@@ -335,8 +338,8 @@ func WithDownloadTimeout(t time.Duration) InstallServiceOpt {
 	}
 }
 
-func WithInstanceOpts(opts ...serverconfig.InstanceOpt) InstallServiceOpt {
+func WithInstanceOpts(opts ...config.InstanceOpt) InstallServiceOpt {
 	return func(cfg *InstallServiceConfig) {
-		cfg.Instance = serverconfig.NewInstanceOpts(opts...)
+		cfg.Instance = config.NewInstanceOpts(opts...)
 	}
 }

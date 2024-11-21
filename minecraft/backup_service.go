@@ -5,10 +5,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/config"
+	cfg "github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/utils"
+	"github.com/eldius/mineserver-manager/minecraft/config"
 	"github.com/eldius/mineserver-manager/minecraft/model"
-	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
 	"github.com/eldius/properties"
 	"io"
 	"log/slog"
@@ -58,7 +58,7 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 		return "", err
 	}
 
-	versionsFilePath := filepath.Join(instancePath, config.VersionsFileName)
+	versionsFilePath := filepath.Join(instancePath, cfg.VersionsFileName)
 	stat, err := os.Stat(versionsFilePath)
 	if err != nil {
 		err = fmt.Errorf("checking if versions file exists: %w", err)
@@ -95,7 +95,7 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 		return "", err
 	}
 
-	var props serverconfig.ServerProperties
+	var props config.ServerProperties
 	if err := properties.NewDecoder(propsFile).Decode(&props); err != nil {
 		err = fmt.Errorf("parsing properties file: %w", err)
 		return "", err

@@ -1,10 +1,11 @@
-package generators
+package config
 
 import (
 	"bytes"
 	"embed"
 	"fmt"
 	"io"
+	"io/fs"
 	"path/filepath"
 	"text/template"
 )
@@ -29,31 +30,31 @@ type Eula struct {
 	Eula bool `properties:"eula"`
 }
 
-type RuntimeGenerator struct {
-	Xmx           string
-	Xms           string
-	LogConfigFile bool
-	Headless      bool
+func readTemplateFile(filename string) (fs.File, error) {
+	return templateFiles.Open(filename)
 }
 
 func StopScript() (string, error) {
-	f, err := templateFiles.Open(filepath.Join("templates", StopScriptFileName))
+	f, err := readTemplateFile(filepath.Join("templates", StopScriptFileName))
 	if err != nil {
 		err = fmt.Errorf("opening template stop script (%q): %v", StopScriptFileName, err)
 		return "", err
 	}
-	var b bytes.Buffer
-	if _, err := io.Copy(&b, f); err != nil {
-		err = fmt.Errorf("reading template stop script (%q): %v", StopScriptFileName, err)
+	defer func() {
+		_ = f.Close()
+	}()
+	fc, err := io.ReadAll(f)
+	if err != nil {
+		err = fmt.Errorf("reading stop script (%q): %v", StopScriptFileName, err)
 		return "", err
 	}
 
-	return b.String(), nil
+	return string(fc), nil
 }
 
-func LoggingConfiguration(installPath string) (string, error) {
+func LoggingConfiguration(logfileDestDir string) (string, error) {
 	var b bytes.Buffer
-	if err := tpl.ExecuteTemplate(&b, "log4j2.xml", installPath); err != nil {
+	if err := tpl.ExecuteTemplate(&b, "log4j2.xml", logfileDestDir); err != nil {
 		err = fmt.Errorf("generating logging configuration file: %w", err)
 		return "", err
 	}

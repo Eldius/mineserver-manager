@@ -3,9 +3,8 @@ package model
 import (
 	"fmt"
 	"github.com/asdine/storm/v3"
-	"github.com/eldius/mineserver-manager/internal/config"
-	"github.com/eldius/mineserver-manager/minecraft/serverconfig"
-	"github.com/eldius/mineserver-manager/minecraft/serverconfig/generators"
+	cfg "github.com/eldius/mineserver-manager/internal/config"
+	"github.com/eldius/mineserver-manager/minecraft/config"
 	"github.com/google/uuid"
 	"time"
 )
@@ -24,17 +23,15 @@ type Instance struct {
 	Name             string `storm:"unique"`
 	Path             string `storm:"unique"`
 	InstallDate      time.Time
-	RuntimeParams    generators.RuntimeGenerator
-	ServerProperties serverconfig.ServerProperties
+	ServerProperties config.ServerProperties
 }
 
-func NewInstance(name, path string, runtimeParams generators.RuntimeGenerator, serverProperties serverconfig.ServerProperties) *Instance {
+func NewInstance(name, path string, serverProperties config.ServerProperties) *Instance {
 	return &Instance{
 		ID:               uuid.New().String(),
 		Name:             name,
 		Path:             path,
 		InstallDate:      time.Now(),
-		RuntimeParams:    runtimeParams,
 		ServerProperties: serverProperties,
 	}
 }
@@ -54,7 +51,7 @@ func Persist(i *Instance) (*Instance, error) {
 
 func openDB() {
 	var err error
-	db, err = storm.Open(config.GetAppHomePath())
+	db, err = storm.Open(cfg.GetAppHomePath())
 	if err != nil {
 		err = fmt.Errorf("opening db file: %w", err)
 		panic(err)
