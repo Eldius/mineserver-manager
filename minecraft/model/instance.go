@@ -11,13 +11,6 @@ import (
 
 var db *storm.DB
 
-type RuntimeParams struct {
-	Xmx           string
-	Xms           string
-	LogConfigFile bool
-	Headless      bool
-}
-
 type Instance struct {
 	ID               string `storm:"index"`
 	Name             string `storm:"unique"`
