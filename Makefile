@@ -32,3 +32,16 @@ release-local:
 put:
 	echo 'rm ~/.bin/mineserver' | sftp $(USER)@$(TEST_SERVER)
 	echo 'put ./dist/mineserver-cli_linux_arm64/mineserver .bin/' | sftp $(USER)@$(TEST_SERVER)
+
+run-remote:
+	ssh $(USER)@$(TEST_SERVER) '~/.bin/mineserver install \
+		--version 1.21.3 \
+		--motd "A new test server" \
+		--level-name "My test world" \
+		--rcon-enabled \
+		--rcon-passwd "MyStrongP@ss#123" \
+		--headless \
+		--dest /mineservers/vanila-1.21.3-aikar \
+		--seed "5516949179205280665" \
+		--memory-limit 2g \
+		--whitelist-user Eldius'

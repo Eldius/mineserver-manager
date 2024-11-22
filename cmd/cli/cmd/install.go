@@ -83,16 +83,19 @@ func (o installCmdOpts) ToInstanceOpts() []config.InstanceOpt {
 		opts = append(opts, config.WithServerPropsSeed(o.Seed))
 	}
 	if o.RconEnabled {
-		passwd, err := utils.PasswordPrompt()
-		if err != nil {
-			err = fmt.Errorf("rcon pass promtp: %w", err)
+		if o.RconPass == "" {
+			passwd, err := utils.PasswordPrompt()
+			if err != nil {
+				err = fmt.Errorf("rcon pass promtp: %w", err)
+				panic(err)
+			}
+			o.RconPass = passwd
+		}
+		if o.RconPass == "" {
+			err := errors.New("RCON password mustn't be empty when RCON is enabled")
 			panic(err)
 		}
-		if passwd == "" {
-			err = errors.New("RCON password mustn't be empty when RCON is enabled")
-			panic(err)
-		}
-		opts = append(opts, config.WithServerPropsRconEnabled(o.RconPort, passwd))
+		opts = append(opts, config.WithServerPropsRconEnabled(o.RconPort, o.RconPass))
 	}
 
 	if len(o.users) > 0 {
@@ -122,8 +125,9 @@ func init() {
 	installCmd.Flags().IntVar(&installOpts.ServerPort, "server-port", 25565, "Server port (defaults to 25565)")
 	installCmd.Flags().IntVar(&installOpts.QueryPort, "query-port", 25566, "Server port (defaults to 25565)")
 
+	installCmd.Flags().BoolVar(&installOpts.RconEnabled, "rcon-enabled", false, "Enable RCON protocol")
 	installCmd.Flags().IntVar(&installOpts.RconPort, "rcon-port", 25575, "RCON server port (defaults to 25565)")
-	installCmd.Flags().BoolVar(&installOpts.RconEnabled, "enable-rcon", false, "Enable RCON protocol")
+	installCmd.Flags().StringVar(&installOpts.RconPass, "rcon-passwd", "", "RCON password (it will be asked if empty)")
 
 	installCmd.Flags().StringSliceVar(&installOpts.users, "whitelist-user", []string{}, "List of users to whitelist (optional)")
 
