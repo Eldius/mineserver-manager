@@ -33,7 +33,25 @@ put:
 	echo 'rm ~/.bin/mineserver' | sftp $(USER)@$(TEST_SERVER)
 	echo 'put ./dist/mineserver-cli_linux_arm64/mineserver .bin/' | sftp $(USER)@$(TEST_SERVER)
 
-run-remote:
+install-remote:
+	@echo "###################################"
+	@echo "#  Backing up old instalation...  #"
+	@echo "###################################"
+	@echo
+	ssh $(USER)@$(TEST_SERVER) '~/.bin/mineserver backup save --instance-folder /mineservers/vanila-1.21.3-aikar --backup-folder /mineservers/backup'
+	@echo
+	@echo
+	@echo "##################################"
+	@echo "#  Cleaning old installation...  #"
+	@echo "##################################"
+	@echo
+	ssh $(USER)@$(TEST_SERVER) 'rm -rf /mineservers/vanila-1.21.3-aikar'
+	@echo
+	@echo
+	@echo "###############################"
+	@echo "#  Making a clean install...  #"
+	@echo "###############################"
+	@echo
 	ssh $(USER)@$(TEST_SERVER) '~/.bin/mineserver install \
 		--version 1.21.3 \
 		--motd "A new test server" \
