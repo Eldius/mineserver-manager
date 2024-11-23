@@ -3,6 +3,8 @@ package minecraft
 import (
 	"archive/zip"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	cfg "github.com/eldius/mineserver-manager/internal/config"
@@ -38,11 +40,6 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 		slog.String("instance_path", instancePath),
 		slog.String("backup_dest_folder", backupDestPath),
 	)
-	fmt.Printf("is it nil? %+v\n", log)
-	fmt.Printf("is it nil? (2) %p\n", log)
-
-	fmt.Printf("is it nil? %+v\n", ctx)
-	fmt.Printf("is it nil? (2) %p\n", ctx)
 
 	log.InfoContext(ctx, "starting backup process")
 
@@ -192,7 +189,7 @@ func createZipFile(_ context.Context, destFile string, files []fileToBackup) err
 	}()
 
 	for _, file := range files {
-		if err := copyFile(file, w); err != nil {
+		if _, err := copyFile(file, w); err != nil {
 			err = fmt.Errorf("copying file: %w", err)
 			return err
 		}
@@ -201,11 +198,11 @@ func createZipFile(_ context.Context, destFile string, files []fileToBackup) err
 	return nil
 }
 
-func copyFile(file fileToBackup, w *zip.Writer) error {
+func copyFile(file fileToBackup, w *zip.Writer) (string, error) {
 	in, err := os.Open(file.src)
 	if err != nil {
 		err = fmt.Errorf("opening file to backup (%s): %w", file.src, err)
-		return err
+		return "", err
 	}
 	defer func() {
 		_ = in.Close()
@@ -215,15 +212,23 @@ func copyFile(file fileToBackup, w *zip.Writer) error {
 	dstFileWriter, err := w.Create(file.dst)
 	if err != nil {
 		err = fmt.Errorf("creating file to backup (%s): %w", file.dst, err)
-		return err
+		return "", err
 	}
 
-	_, err = io.Copy(dstFileWriter, in)
+	b, err := io.ReadAll(in)
+	if err != nil {
+		err = fmt.Errorf("reading file to backup (%s): %w", file.dst, err)
+		return "", err
+	}
+	_, err = fmt.Fprint(dstFileWriter, b)
 	if err != nil {
 		err = fmt.Errorf("copying file to backup (%s): %w", file.dst, err)
-		return err
+		return "", err
 	}
-	return nil
+	hash := sha256.New()
+	_, _ = hash.Write(b)
+
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 type fileToBackup struct {
