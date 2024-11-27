@@ -63,3 +63,18 @@ install-remote:
 		--seed "5516949179205280665" \
 		--memory-limit 2g \
 		--whitelist-user Eldius'
+
+backup-remote:
+	@echo "###############################"
+	@echo "#  Backing up instalation...  #"
+	@echo "###############################"
+	@echo
+	ssh $(USER)@$(TEST_SERVER) '~/.bin/mineserver backup save \
+		--instance-folder /mineservers/test-server-backup \
+		--backup-folder /mineservers/backup'
+
+.tmp:
+	-mkdir -p .tmp
+
+get-remote-backups: .tmp
+	sftp $(USER)@$(TEST_SERVER):/mineservers/backup/test-server-backup_*_backup.zip .tmp/
