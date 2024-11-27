@@ -2,7 +2,9 @@ package utils
 
 import (
 	"archive/zip"
+	"bytes"
 	"context"
+	"crypto/sha256"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"io"
@@ -44,8 +46,10 @@ func pack(_ context.Context, src, dest string) error {
 	}()
 
 	javaFolder := filepath.Join(src, "java")
+
+	var hashes bytes.Buffer
 	if err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
-		log = log.With(
+		log := log.With(
 			slog.String("path", path),
 			slog.String("name", info.Name()),
 			slog.Bool("is_dir", info.IsDir()),
@@ -93,7 +97,8 @@ func pack(_ context.Context, src, dest string) error {
 
 		fmt.Printf("- file name: %s\n", info.Name())
 		fmt.Printf("  file path: %s\n", path)
-		out, err := w.Create(strings.TrimPrefix(path, src))
+		packedFileName := strings.TrimPrefix(path, src)
+		out, err := w.Create(packedFileName)
 		if err != nil {
 			err = fmt.Errorf("creating file to backup (%s): %w", path, err)
 			return err
@@ -105,15 +110,37 @@ func pack(_ context.Context, src, dest string) error {
 			return err
 		}
 
-		log.Debug("copying file to zip")
-		if _, err := io.Copy(out, in); err != nil {
-			err = fmt.Errorf("copying file to backup (%s): %w", path, err)
+		b, err := io.ReadAll(in)
+		if err != nil {
+			err = fmt.Errorf("reading file to backup (%s): %w", path, err)
 			return err
 		}
+
+		log.Debug("copying file to zip")
+		if _, err := out.Write(b); err != nil {
+			err = fmt.Errorf("writing file to zip (%s): %w", path, err)
+			return err
+		}
+		hash := sha256.New()
+		if _, err := hash.Write(b); err != nil {
+			err = fmt.Errorf("calculating file hash (%s): %w", path, err)
+			return err
+		}
+		hashes.WriteString(fmt.Sprintf("%s  %x\n", packedFileName, hash.Sum(nil)))
 
 		return nil
 	}); err != nil {
 		err = fmt.Errorf("listing instance files: %w", err)
+		return err
+	}
+
+	hf, err := w.Create("backup.sha256")
+	if err != nil {
+		err = fmt.Errorf("creating file to backup (%s): %w", src, err)
+		return err
+	}
+	if _, err := hf.Write(hashes.Bytes()); err != nil {
+		err = fmt.Errorf("writing file to backup (%s): %w", src, err)
 		return err
 	}
 
