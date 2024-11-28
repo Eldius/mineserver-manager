@@ -1,10 +1,10 @@
 before:
   hooks:
-    - go mod tidy
+    - go get .
     - go generate ./...
     - go test ./... -cover
-    - make vulncheck
-    - make lint
+    - govulncheck ./...
+    - golangci-lint run
 
 builds:
   - id: mineserver-cli
