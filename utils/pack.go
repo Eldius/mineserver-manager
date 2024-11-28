@@ -4,7 +4,6 @@ import (
 	"archive/zip"
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"io"
@@ -121,12 +120,7 @@ func pack(_ context.Context, src, dest string) error {
 			err = fmt.Errorf("writing file to zip (%s): %w", path, err)
 			return err
 		}
-		hash := sha256.New()
-		if _, err := hash.Write(b); err != nil {
-			err = fmt.Errorf("calculating file hash (%s): %w", path, err)
-			return err
-		}
-		hashes.WriteString(fmt.Sprintf("%s  %x\n", packedFileName, hash.Sum(nil)))
+		hashes.WriteString(fmt.Sprintf("%s  %s\n", packedFileName, shaHash(b)))
 
 		return nil
 	}); err != nil {

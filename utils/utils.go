@@ -5,6 +5,8 @@ import (
 	"compress/gzip"
 	"context"
 	"crypto/sha1"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
@@ -35,6 +37,7 @@ func GetFileName(u string) string {
 	return filepath.Base(p.Path)
 }
 
+// DownloadFile downloads a file
 func DownloadFile(ctx context.Context, timeout time.Duration, u, destFile string) error {
 	c := HTTPClient(timeout)
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, u, nil)
@@ -77,6 +80,13 @@ func DownloadFile(ctx context.Context, timeout time.Duration, u, destFile string
 func Must[T any](obj T, err error) T {
 	if err != nil {
 		panic(err)
+	}
+	return obj
+}
+
+func WarnOnError[T any](obj T, err error) T {
+	if err != nil {
+		logger.GetLogger().With("error", err).Warn("WarnOnError")
 	}
 	return obj
 }
@@ -196,6 +206,8 @@ func HTTPClient(t time.Duration) http.Client {
 	}
 }
 
+// PasswordPrompt prompts user for a password
+// (hiding it's value from console)
 func PasswordPrompt() (string, error) {
 	fmt.Print("Enter Password: ")
 	bytePassword, err := term.ReadPassword(0)
@@ -208,6 +220,7 @@ func PasswordPrompt() (string, error) {
 	return strings.TrimSpace(password), nil
 }
 
+// ExpandPath expands tilde '~' character for home
 func ExpandPath(path string) (string, error) {
 	if len(path) == 0 || path[0] != '~' {
 		return path, nil
@@ -220,10 +233,27 @@ func ExpandPath(path string) (string, error) {
 	return filepath.Join(usr.HomeDir, path[1:]), nil
 }
 
+// AbsolutePath returns the absolute path
 func AbsolutePath(path string) (string, error) {
 	path, err := ExpandPath(path)
 	if err != nil {
 		return "", fmt.Errorf("expanded path: %w", err)
 	}
 	return filepath.Abs(path)
+}
+
+func shaHash(content []byte) string {
+	hash := sha256.New()
+	hash.Write(content)
+	return hex.EncodeToString(hash.Sum(nil))
+}
+
+// ShaHash calculates hash from io.Reader content
+func ShaHash(r io.Reader) (string, error) {
+	hash := sha256.New()
+	if _, err := io.Copy(hash, r); err != nil {
+		err = fmt.Errorf("reading file to backup (%s): %w", r, err)
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
 }
