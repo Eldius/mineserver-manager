@@ -19,8 +19,6 @@ jobs:
         run: go get ./...
       - name: Test
         run: go test ./... -cover
-        with:
-          go-version: ${{ matrix.go }}
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
