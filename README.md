@@ -1,4 +1,10 @@
+
 # mineserver-manager #
+
+## Latest build status ##
+
+![Go](https://github.com/eldius/mineserver-manager/actions/workflows/go.yml/badge.svg)
+![Latest release status](https://github.com/eldius/mineserver-manager/actions/workflows/releases.yml/badge.svg)
 
 A tool to help Minecraft servers management.
 
