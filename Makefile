@@ -4,7 +4,8 @@ TEST_SERVER ?= 192.168.0.42
 
 test:
 	go clean -cache
-	go test ./... -cover
+	go test ./... -cover -covermode=set -coverpkg=./... -coverprofile=coverage.out
+	go tool cover -html=coverage.out
 
 install:
 	$(eval TMP := $(shell mktemp -d))
