@@ -198,6 +198,7 @@ func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder strin
 	return json.NewEncoder(f).Encode(&model.VersionsInfo{
 		JavaVersion: opts.VersionInfo.JavaVersion.MajorVersion,
 		MineVersion: opts.VersionInfo.ID,
+		MineFlavour: model.MineFlavourVanilla,
 		CliVersion: model.CliVersion{
 			Version:   info.Version,
 			Commit:    info.Commit,

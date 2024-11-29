@@ -57,10 +57,17 @@ type CliVersion struct {
 	BuildDate string `json:"build_date"`
 }
 
+type MineFlavour string
+
+const (
+	MineFlavourVanilla MineFlavour = "vanilla"
+)
+
 type VersionsInfo struct {
-	JavaVersion int        `json:"java_version"`
-	MineVersion string     `json:"mine_version"`
-	CliVersion  CliVersion `json:"cli_version"`
+	CliVersion  CliVersion  `json:"cli_version"`
+	MineFlavour MineFlavour `json:"mine_flavour"`
+	MineVersion string      `json:"mine_version"`
+	JavaVersion int         `json:"java_version"`
 }
 
 type WhitelistRecord struct {
