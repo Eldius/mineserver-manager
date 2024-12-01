@@ -51,7 +51,12 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 			time.Now().Format("2006-01-02_15-04-05"),
 		))
 
-	return destFile, utils.PackFiles(ctx, instancePath, destFile)
+	if err := utils.PackFiles(ctx, instancePath, destFile); err != nil {
+		err = fmt.Errorf("writing backup file: %w", err)
+		return "", err
+	}
+
+	return destFile, nil
 }
 
 func (s *backupService) Restore(ctx context.Context, instancePath, backupDestFolder string) error {

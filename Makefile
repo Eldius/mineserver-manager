@@ -78,4 +78,4 @@ backup-remote:
 	-mkdir -p .tmp
 
 get-remote-backups: .tmp
-	sftp $(USER)@$(TEST_SERVER):/mineservers/backup/test-server-backup_*_backup.zip .tmp/
+	sftp $(USER)@$(TEST_SERVER):/mineservers/backup/test-server-backup_*_backup.zip* .tmp/
