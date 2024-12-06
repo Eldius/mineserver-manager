@@ -59,6 +59,6 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 	return destFile, nil
 }
 
-func (s *backupService) Restore(ctx context.Context, instancePath, backupDestFolder string) error {
+func (s *backupService) Restore(ctx context.Context, instancePath, backupFile string) error {
 	return nil
 }

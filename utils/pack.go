@@ -96,8 +96,9 @@ func pack(_ context.Context, src, dest string) error {
 
 		fmt.Printf("- file name: %s\n", info.Name())
 		fmt.Printf("  file path: %s\n", path)
-		packedFileName := strings.TrimPrefix(path, src)
-		out, err := w.Create(packedFileName)
+
+		fileName := packedFileName(path, src)
+		out, err := w.Create(fileName)
 		if err != nil {
 			err = fmt.Errorf("creating file to backup (%s): %w", path, err)
 			return err
@@ -120,7 +121,7 @@ func pack(_ context.Context, src, dest string) error {
 			err = fmt.Errorf("writing file to zip (%s): %w", path, err)
 			return err
 		}
-		hashes.WriteString(fmt.Sprintf("%s  %s\n", packedFileName, shaHash(b)))
+		hashes.WriteString(fmt.Sprintf("%s  %s\n", fileName, shaHash(b)))
 
 		return nil
 	}); err != nil {
@@ -139,4 +140,10 @@ func pack(_ context.Context, src, dest string) error {
 	}
 
 	return nil
+}
+
+func packedFileName(path, src string) string {
+	fmt.Printf("  file path: %s\n", path)
+	packedFileName := strings.TrimPrefix(path, src)
+	return strings.TrimPrefix(packedFileName, "/")
 }
