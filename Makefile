@@ -31,8 +31,8 @@ release-local:
 	goreleaser release --clean --skip=publish
 
 put:
-	echo 'rm ~/.bin/mineserver' | sftp $(USER)@$(TEST_SERVER)
-	echo 'put ./dist/mineserver-cli_linux_arm64/mineserver .bin/' | sftp $(USER)@$(TEST_SERVER)
+	echo 'rm /home/eldius/.bin/mineserver' | sftp $(USER)@$(TEST_SERVER)
+	echo 'put ./dist/mineserver-cli_linux_arm64_v8.0/mineserver .bin/' | sftp $(USER)@$(TEST_SERVER)
 
 install-remote:
 	@echo "###################################"
@@ -73,6 +73,16 @@ backup-remote:
 	ssh $(USER)@$(TEST_SERVER) '~/.bin/mineserver backup save \
 		--instance-folder /mineservers/test-server-backup \
 		--backup-folder /mineservers/backup'
+
+restore-remote:
+	@echo "###############################"
+	@echo "#  Backing up instalation...  #"
+	@echo "###############################"
+	@echo
+	ssh $(USER)@$(TEST_SERVER) '~/.bin/mineserver backup restore \
+		--debug \
+		--instance-folder /mineservers/test-server-backup-restore \
+		--backup-file /mineservers/backup/server-mundo-da-duda_2024-12-06_00-00-01_backup.zip'
 
 .tmp:
 	-mkdir -p .tmp
