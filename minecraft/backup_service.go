@@ -82,7 +82,9 @@ func (s *backupService) Restore(_ context.Context, instancePath, backupFile stri
 			slog.String("dest_file", outFile),
 		).Debug("UnpackingFile")
 
-		_ = os.MkdirAll(filepath.Dir(outFile), os.ModePerm)
+		if err := os.MkdirAll(filepath.Dir(outFile), os.ModePerm); err != nil {
+			return fmt.Errorf("mkdirall: %w", err)
+		}
 
 		out, err := os.Create(outFile)
 		if err != nil {
