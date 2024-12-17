@@ -10,7 +10,7 @@ test:
 install:
 	$(eval TMP := $(shell mktemp -d))
 	@echo "temp folder: $(TMP)"
-	go run ./cmd/cli install --dest $(TMP) --headless --enable-rcon --motd "My Awsome Server" --level-name "My Precious" --seed "$(TMP)"
+	go run ./cmd/cli install --dest $(TMP) --headless --rcon-enabled --motd "My Awsome Server" --level-name "My Precious" --seed "$(TMP)"
 
 versions:
 	go run ./cmd/cli install --list

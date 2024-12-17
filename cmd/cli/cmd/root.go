@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	initCfg "github.com/eldius/initial-config-go/configs"
+	"github.com/eldius/initial-config-go/setup"
 	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -15,10 +16,10 @@ var rootCmd = &cobra.Command{
 	Short: "A simple CLI tool to manage Minecraft server installations",
 	Long:  `A simple CLI tool to manage Minecraft server installations.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		return initCfg.InitSetup("mineserver", initCfg.WithConfigFileToBeUsed(cfgFile),
-			initCfg.WithDefaultCfgFileLocations("/.mineserver", "."),
-			initCfg.WithDefaultCfgFileName("config"),
-			initCfg.WithDefaultValues(map[string]any{
+		return setup.InitSetup("mineserver", setup.WithConfigFileToBeUsed(cfgFile),
+			setup.WithDefaultCfgFileLocations("/.mineserver", "."),
+			setup.WithDefaultCfgFileName("config"),
+			setup.WithDefaultValues(map[string]any{
 				config.AppMinecraftAPITimeoutPropKey:    "10s",
 				config.AppInstallDownloadTimeoutPropKey: "300s",
 				config.AppDebugModePropKey:              false,
@@ -28,7 +29,8 @@ var rootCmd = &cobra.Command{
 				initCfg.LogLevelKey:                     initCfg.LogLevelDEBUG,
 				initCfg.LogFormatKey:                    initCfg.LogFormatJSON,
 				initCfg.LogOutputToStdoutKey:            true,
-			}))
+			}),
+		)
 	},
 	// Uncomment the following line if your bare application
 	// has an action associated with it:

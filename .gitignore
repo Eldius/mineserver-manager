@@ -4,4 +4,4 @@
 dist/
 *.log
 .tmp/
-coverage.out
+*.out
