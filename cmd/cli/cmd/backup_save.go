@@ -26,8 +26,9 @@ var backupSaveCmd = &cobra.Command{
 
 var (
 	backupSaveOpts struct {
-		instance   string
-		destFolder string
+		instance       string
+		destFolder     string
+		maxBackupFiles int
 	}
 )
 
@@ -36,4 +37,5 @@ func init() {
 
 	backupSaveCmd.Flags().StringVar(&backupSaveOpts.instance, "instance-folder", ".", "Installation root directory (defaults to current directory)")
 	backupSaveCmd.Flags().StringVar(&backupSaveOpts.destFolder, "backup-folder", ".backups", "Backup file destination folder (defaults to .backups on current directory)")
+	backupSaveCmd.Flags().IntVar(&backupSaveOpts.maxBackupFiles, "max-backup-files", 5, "Max number of backup files to be stored (defaults to 5)")
 }
