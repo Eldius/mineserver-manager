@@ -16,7 +16,7 @@ var rootCmd = &cobra.Command{
 	Short: "A simple CLI tool to manage Minecraft server installations",
 	Long:  `A simple CLI tool to manage Minecraft server installations.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		return setup.InitSetup("mineserver", setup.WithConfigFileToBeUsed(cfgFile),
+		return setup.InitSetup(config.AppName, setup.WithConfigFileToBeUsed(cfgFile),
 			setup.WithDefaultCfgFileLocations("/.mineserver", "."),
 			setup.WithDefaultCfgFileName("config"),
 			setup.WithDefaultValues(map[string]any{

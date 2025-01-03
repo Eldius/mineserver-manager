@@ -13,6 +13,7 @@ import (
 )
 
 const (
+	//bkpTimestampFormat = "2006-01-02_15-04-05"
 	bkpTimestampFormat = "2006-01-02_15-04-05"
 )
 
@@ -21,7 +22,7 @@ type BackupService interface {
 	Backup(ctx context.Context, instancePath, backupDestFolder string) (string, error)
 	// Restore restores a backup file to instance
 	Restore(ctx context.Context, instancePath, backupFile string) error
-	// RotateBackupFiles limits max backup files stored
+	// RolloverBackupFiles limits max backup files stored
 	RolloverBackupFiles(ctx context.Context, backupDestFolder string) error
 }
 
@@ -92,7 +93,7 @@ func (s *backupService) RolloverBackupFiles(ctx context.Context, backupDestFolde
 	}
 
 	for k, _ := range bkpFiles {
-		ts, err := time.Parse(k, bkpTimestampFormat)
+		ts, err := time.Parse(bkpTimestampFormat, k)
 		if err != nil {
 			return fmt.Errorf("parsing backup timestamp: %w", err)
 		}
@@ -102,8 +103,8 @@ func (s *backupService) RolloverBackupFiles(ctx context.Context, backupDestFolde
 	return nil
 }
 
-func mapBackupFiles(ctx context.Context, backupDestFolder string) (map[string]os.DirEntry, error) {
-	filesMap := make(map[string]os.DirEntry)
+func mapBackupFiles(ctx context.Context, backupDestFolder string) (backupsMapping, error) {
+	filesMap := make(backupsMapping)
 
 	entries, err := os.ReadDir(backupDestFolder)
 	if err != nil {
@@ -122,8 +123,58 @@ func mapBackupFiles(ctx context.Context, backupDestFolder string) (map[string]os
 			slog.String("find_str", str),
 		).DebugContext(ctx, "parsing backup file")
 		if len(str) > 0 {
-			filesMap[strings.TrimSuffix(str, "_backup.zip")] = entry
+			bkpName := strings.TrimSuffix(entry.Name(), "_"+str)
+			tsStr := strings.TrimSuffix(str, "_backup.zip")
+
+			var bkpList []backupInfo
+
+			if l, ok := filesMap[bkpName]; ok {
+				bkpList = l
+			}
+
+			ts, err := time.Parse(bkpTimestampFormat, tsStr)
+			if err != nil {
+				log.With("error", err, "ts_str", tsStr, "bkp_name", bkpName, "ts_str", tsStr).
+					WarnContext(ctx, "backup file timestamp parsing failed")
+				continue
+			}
+			filesMap[bkpName] = append(bkpList, backupInfo{
+				timestamp: ts,
+				name:      bkpName,
+				path:      filepath.Join(backupDestFolder, bkpName),
+			})
+
 		}
 	}
 	return filesMap, nil
+}
+
+type backupInfo struct {
+	timestamp time.Time
+	name      string
+	path      string
+}
+
+type backupsMapping map[string]backupList
+
+type backupList []backupInfo
+
+func (i backupList) olderFile() *backupInfo {
+	if len(i) == 0 {
+		return nil
+	}
+
+	var older *backupInfo
+
+	for _, bkpInfo := range i {
+		if older == nil {
+			older = &bkpInfo
+			continue
+		}
+		if bkpInfo.timestamp.Before(older.timestamp) {
+			older = &bkpInfo
+		}
+	}
+
+	return older
 }

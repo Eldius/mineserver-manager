@@ -12,4 +12,6 @@ const (
 	AppHomeDefaultValue = "~/.mineserver"
 
 	VersionsFileName = "versions.json"
+
+	AppName = "mineserver"
 )
