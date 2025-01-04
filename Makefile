@@ -72,7 +72,8 @@ backup-remote:
 	@echo
 	ssh $(USER)@$(TEST_SERVER) '~/.bin/mineserver backup save \
 		--instance-folder /mineservers/test-server-backup \
-		--backup-folder /mineservers/backup'
+		--backup-folder /mineservers/backup \
+		--max-backup-files 5'
 
 restore-remote:
 	@echo "###############################"

@@ -12,7 +12,7 @@ import (
 )
 
 func TestInstaller_DownloadServer(t *testing.T) {
-	t.Run("given a version with the right checksum value name should download and validate file checksum with success", func(t *testing.T) {
+	t.Run("given a version with the right checksum value Name should download and validate file checksum with success", func(t *testing.T) {
 		gock.New("https://piston-data.mojang.com").
 			Get("/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar").
 			Reply(200).
@@ -41,7 +41,7 @@ func TestInstaller_DownloadServer(t *testing.T) {
 		}
 	})
 
-	t.Run("given a version with the wrong checksum value name should download and validate file checksum without success", func(t *testing.T) {
+	t.Run("given a version with the wrong checksum value Name should download and validate file checksum without success", func(t *testing.T) {
 		gock.New("https://piston-data.mojang.com").
 			Get("/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar").
 			Reply(200).

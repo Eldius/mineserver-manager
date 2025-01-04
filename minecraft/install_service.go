@@ -85,8 +85,8 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...config.Instan
 
 	v, err := ver.GetVersion(cfg.VersionName)
 	if err != nil {
-		err = fmt.Errorf("getting online versions list for name '%s': %w", cfg.VersionName, err)
-		log.With("error", err, "version", cfg.VersionName).ErrorContext(ctx, "Failed to get version for name")
+		err = fmt.Errorf("getting online versions list for Name '%s': %w", cfg.VersionName, err)
+		log.With("error", err, "version", cfg.VersionName).ErrorContext(ctx, "Failed to get version for Name")
 		return err
 	}
 
@@ -94,7 +94,7 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...config.Instan
 
 	cfg.VersionInfo, err = i.c.GetVersionInfo(ctx, *v)
 	if err != nil {
-		err = fmt.Errorf("getting version info for name '%s': %w", cfg.VersionName, err)
+		err = fmt.Errorf("getting version info for Name '%s': %w", cfg.VersionName, err)
 		log.With("error", err).ErrorContext(ctx, "Failed to fetch version info for '%s (%s)'", v.ID, cfg.VersionName)
 		return err
 	}
