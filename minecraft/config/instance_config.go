@@ -6,7 +6,16 @@ import (
 	"github.com/eldius/mineserver-manager/utils"
 	"gopkg.in/yaml.v3"
 	"path/filepath"
+	"strings"
 )
+
+const (
+	VanillaServerSoftware ServerSoftware = "vanilla"
+	PurpurServerSoftware  ServerSoftware = "purpur"
+	EmptyServerSoftware   ServerSoftware = ""
+)
+
+type ServerSoftware string
 
 type InstanceOpts struct {
 	SrvProps           *ServerProperties
@@ -17,6 +26,7 @@ type InstanceOpts struct {
 	MemoryOpt          string
 	AddLogConfig       bool
 	Headless           bool
+	Flavor             ServerSoftware
 }
 
 func (o InstanceOpts) HasWhitelist() bool {
@@ -149,5 +159,20 @@ func WithServerPropsQuery(port int, enabled bool) InstanceOpt {
 func WithServerPropsSeed(seed string) InstanceOpt {
 	return func(s *InstanceOpts) {
 		s.SrvProps.LevelSeed = seed
+	}
+}
+
+// WithServerFlavour defines server software to be installed
+func WithServerFlavour(f string) InstanceOpt {
+	return func(s *InstanceOpts) {
+		switch {
+		case strings.EqualFold(f,
+			string(VanillaServerSoftware)),
+			strings.EqualFold(f, string(PurpurServerSoftware)),
+			strings.EqualFold(f, string(EmptyServerSoftware)):
+			s.Flavor = ServerSoftware(f)
+		default:
+			s.Flavor = ""
+		}
 	}
 }
