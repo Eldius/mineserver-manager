@@ -167,7 +167,7 @@ func mapBackupFiles(ctx context.Context, backupDestFolder string) (backupsMappin
 		}
 	}
 
-	for k, _ := range filesMap {
+	for k := range filesMap {
 		sort.Slice(filesMap[k], func(i, j int) bool {
 			return filesMap[k][i].Timestamp.Before(filesMap[k][j].Timestamp)
 		})
