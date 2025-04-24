@@ -5,7 +5,7 @@ go 1.24.2
 require (
 	github.com/asdine/storm/v3 v3.2.1
 	github.com/eldius/initial-config-go v0.0.9
-	github.com/eldius/properties v0.0.3
+	github.com/eldius/properties v0.0.4
 	github.com/google/uuid v1.6.0
 	github.com/h2non/gock v1.2.0
 	github.com/spf13/cobra v1.9.1
@@ -23,7 +23,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
-	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
