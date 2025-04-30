@@ -12,11 +12,19 @@ import (
 var db *storm.DB
 
 type Instance struct {
-	ID               string `storm:"index"`
-	Name             string `storm:"unique"`
-	Path             string `storm:"unique"`
+	ID   string `storm:"index"`
+	Name string `storm:"unique"`
+	Path string `storm:"unique"`
+
 	InstallDate      time.Time
 	ServerProperties config.ServerProperties
+}
+
+type RemoteInstance struct {
+	Instance
+	Host string `storm:"index"`
+	Port int64
+	User string `storm:"index"`
 }
 
 func NewInstance(name, path string, serverProperties config.ServerProperties) *Instance {

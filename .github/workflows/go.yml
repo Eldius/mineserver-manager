@@ -5,16 +5,11 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go: [v1.23.3]
     steps:
       - name: checkout
         uses: actions/checkout@v4
       - name: Setup Go Versions
         uses: actions/setup-go@v5
-        with:
-          go-version: ${{ matrix.go }}
       - name: Install dependencies
         run: go get ./...
       - name: Test
@@ -22,7 +17,6 @@ jobs:
       - name: govulncheck
         uses: golang/govulncheck-action@v1
         with:
-           go-version-input: ${{ matrix.go }}
            go-package: ./...
 
   lint:
