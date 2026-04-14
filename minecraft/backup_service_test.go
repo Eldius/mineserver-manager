@@ -11,7 +11,7 @@ import (
 )
 
 func init() {
-	_ = setup.InitSetup(config.AppName, setup.WithDefaultValues(map[string]any{
+	_ = setup.InitSetup(context.Background(), config.AppName, setup.WithDefaultValues(map[string]any{
 		configs.LogLevelKey:  configs.LogLevelDEBUG,
 		configs.LogFormatKey: configs.LogFormatJSON,
 	}))

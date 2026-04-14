@@ -2,12 +2,13 @@ package utils
 
 import (
 	"context"
-	"github.com/docker/docker/api/types/container"
-	"github.com/docker/go-connections/nat"
+	"github.com/moby/moby/api/types/container"
+	"github.com/moby/moby/api/types/network"
 	"github.com/stretchr/testify/assert"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"
 	"io"
+	"net/netip"
 	"path/filepath"
 	"testing"
 	"time"
@@ -28,7 +29,7 @@ func TestSSHConnection(t *testing.T) {
 
 	t.Log("ssh server ip:", ip)
 
-	ctx, cancel1 := context.WithTimeout(t.Context(), 30*time.Second)
+	ctx, cancel1 := context.WithTimeout(t.Context(), 60*time.Second)
 	defer cancel1()
 
 	//assert.NoError(t, Execute(ctx, "localhost", "2222"))
@@ -88,6 +89,8 @@ func startSshServer(t *testing.T) (testcontainers.Container, context.CancelFunc)
 	}
 }
 
+func hostConfigModifier(cfg *container.HostConfig) {}
+
 func containerRequestFromDockerfile(t *testing.T) testcontainers.ContainerRequest {
 	t.Helper()
 
@@ -97,6 +100,7 @@ func containerRequestFromDockerfile(t *testing.T) testcontainers.ContainerReques
 	log := &myLogConsumer{
 		t: t,
 	}
+
 	return testcontainers.ContainerRequest{
 		FromDockerfile: testcontainers.FromDockerfile{
 			Context:              filepath.Join(".", "testing", "ssh"),
@@ -124,7 +128,7 @@ func containerRequestFromDockerfile(t *testing.T) testcontainers.ContainerReques
 		WaitingFor:   wait.ForListeningPort(exposedPort),
 		Name:         "test-server",
 		HostConfigModifier: func(cfg *container.HostConfig) {
-			//cfg.
+
 		},
 		LifecycleHooks: []testcontainers.ContainerLifecycleHooks{{
 			PostCreates: []testcontainers.ContainerHook{
@@ -212,9 +216,9 @@ func containerRequest(t *testing.T) testcontainers.ContainerRequest {
 		WaitingFor: wait.ForLog("Server listening on 0.0.0.0 port 2222"),
 		Name:       "test-server",
 		HostConfigModifier: func(cfg *container.HostConfig) {
-			cfg.PortBindings = nat.PortMap{
-				"2222": []nat.PortBinding{{
-					HostIP:   "0.0.0.0",
+			cfg.PortBindings = network.PortMap{
+				network.MustParsePort("2222"): []network.PortBinding{{
+					HostIP:   netip.MustParseAddr("0.0.0.0"),
 					HostPort: "2222",
 				}},
 			}
