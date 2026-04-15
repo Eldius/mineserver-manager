@@ -18,7 +18,7 @@ func Execute(ctx context.Context, host, port string) error {
 
 	timeout := 10 * time.Second
 	if deadline, ok := ctx.Deadline(); ok {
-		timeout = deadline.Sub(time.Now())
+		timeout = time.Until(deadline)
 	}
 
 	fmt.Printf("timeout: %s...\n", timeout.String())
@@ -35,23 +35,8 @@ func Execute(ctx context.Context, host, port string) error {
 		return fmt.Errorf("dial server: %w", err)
 	}
 	defer func() {
-		if err := c.Close(); err != nil {
-		}
+		_ = c.Close()
 	}()
-
-	//client, err := c.DialContext(ctx, "tcp", host+":"+port)
-	//if err != nil {
-	//	return fmt.Errorf("dial server: %w", err)
-	//}
-	//defer func() {
-	//	if err := c.Close(); err != nil {
-	//	}
-	//}()
-	//
-	//_, err = client.Write([]byte("ls -lha /\n"))
-	//if err != nil {
-	//	return fmt.Errorf("write: %w", err)
-	//}
 
 	session, err := c.NewSession()
 	if err != nil {
@@ -63,8 +48,7 @@ func Execute(ctx context.Context, host, port string) error {
 		return fmt.Errorf("ls -lha ./: %w", err)
 	}
 	defer func() {
-		if err := session.Close(); err != nil {
-		}
+		_ = session.Close()
 	}()
 	return nil
 }
