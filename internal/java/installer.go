@@ -29,8 +29,8 @@ var (
 		},
 		17: {
 			"linux": {
-				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-17.0.18-linux-x64.tar.gz",
-				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-17.0.18-linux-aarch64.tar.gz",
+				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-17.0.18-linux-x64.tar.gz",
+				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-17.0.18-linux-aarch64.tar.gz",
 			},
 		},
 		21: {
@@ -41,8 +41,8 @@ var (
 		},
 		25: {
 			"linux": {
-				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-25.0.2-linux-x64.tar.gz",
-				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-25.0.2-linux-aarch64.tar.gz",
+				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-25.0.2-linux-x64.tar.gz",
+				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-25.0.2-linux-aarch64.tar.gz",
 			},
 		},
 	}
