@@ -8,6 +8,8 @@ import (
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"github.com/eldius/mineserver-manager/minecraft"
 	"github.com/eldius/mineserver-manager/minecraft/config"
+	"github.com/eldius/mineserver-manager/minecraft/installer"
+	"github.com/eldius/mineserver-manager/minecraft/mojang"
 	"github.com/eldius/mineserver-manager/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -23,23 +25,44 @@ var installCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 		logger.GetLogger().With("headless", installOpts.Headless).Info("debugging")
 		ctx := context.Background()
-		client := minecraft.NewInstallService(minecraft.WithTimeout(
-			cfg.GetMinecraftApiTimeout()),
-			minecraft.WithDownloadTimeout(cfg.GetMinecraftDownloadTimeout()),
-		)
+
+		var flavor installer.ServerFlavor
+		switch installOpts.Flavor {
+		case "vanilla":
+			flavor = installer.NewVanillaFlavor(mojang.NewClient(mojang.WithTimeout(cfg.GetMinecraftApiTimeout())))
+		case "purpur":
+			// For now, fail if purpur is selected until implemented
+			err := errors.New("purpur flavor not yet implemented")
+			slog.With("error", err).ErrorContext(ctx, "failed to initialize flavor")
+			panic(err)
+		default:
+			err := fmt.Errorf("invalid flavor: %s", installOpts.Flavor)
+			slog.With("error", err).ErrorContext(ctx, "failed to initialize flavor")
+			panic(err)
+		}
 
 		if installOpts.JustListVersions {
-			if err := minecraft.ListVersions(ctx); err != nil {
-				err = fmt.Errorf("listing available mojang: %w", err)
-				slog.With("error", err).ErrorContext(ctx, "failed to list available mojang")
+			versions, err := flavor.ListVersions(ctx)
+			if err != nil {
+				err = fmt.Errorf("listing available versions: %w", err)
+				slog.With("error", err).ErrorContext(ctx, "failed to list available versions")
 				panic(err)
 			}
+			for _, v := range versions {
+				fmt.Printf("- %s\n", v)
+			}
 		} else {
+			client := minecraft.NewInstallService(
+				minecraft.WithTimeout(cfg.GetMinecraftApiTimeout()),
+				minecraft.WithDownloadTimeout(cfg.GetMinecraftDownloadTimeout()),
+				minecraft.WithFlavor(flavor),
+			)
 			opts := append(
 				installOpts.ToInstanceOpts(),
 				config.WithVersion(installOpts.ServerVersion),
 				config.ToDestinationFolder(installOpts.DestinationFolder),
 				config.WithHeadlessConfig(installOpts.Headless),
+				config.WithServerFlavour(installOpts.Flavor),
 			)
 			if err := client.Install(ctx, opts...); err != nil {
 				err = fmt.Errorf("installing server: %w", err)
@@ -51,6 +74,7 @@ var installCmd = &cobra.Command{
 }
 
 type installCmdOpts struct {
+	Flavor            string
 	ServerVersion     string
 	DestinationFolder string
 	Headless          bool
@@ -112,10 +136,11 @@ var (
 func init() {
 	rootCmd.AddCommand(installCmd)
 
+	installCmd.Flags().StringVar(&installOpts.Flavor, "flavor", "vanilla", "Minecraft server flavor (vanilla, purpur)")
 	installCmd.Flags().StringVar(&installOpts.ServerVersion, "version", "latest", "Java Edition server version to be installed, ('latest' will install latest stable version)")
 	installCmd.Flags().StringVar(&installOpts.DestinationFolder, "dest", ".", "Installation root directory (defaults to current directory)")
 	installCmd.Flags().BoolVar(&installOpts.Headless, "headless", false, "Installation root directory (defaults to false)")
-	installCmd.Flags().BoolVar(&installOpts.JustListVersions, "list", false, "Lists available mojang to install")
+	installCmd.Flags().BoolVar(&installOpts.JustListVersions, "list", false, "Lists available versions to install")
 	installCmd.Flags().StringVar(&installOpts.MemoryLimit, "memory-limit", "1g", "Server memory limit")
 
 	installCmd.Flags().StringVar(&installOpts.Motd, "motd", "A Minecraft Server", "Server name (defaults to 'A Minecraft Server')")

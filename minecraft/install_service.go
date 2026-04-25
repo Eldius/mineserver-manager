@@ -7,13 +7,12 @@ import (
 	"fmt"
 	cfg "github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/logger"
-	"github.com/eldius/mineserver-manager/java"
 	"github.com/eldius/mineserver-manager/minecraft/config"
+	"github.com/eldius/mineserver-manager/minecraft/installer"
 	"github.com/eldius/mineserver-manager/minecraft/model"
 	"github.com/eldius/mineserver-manager/minecraft/mojang"
 	"github.com/eldius/mineserver-manager/minecraft/provisioner"
 	"github.com/eldius/mineserver-manager/utils"
-	"github.com/eldius/properties"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -29,21 +28,25 @@ type InstallServiceConfig struct {
 	Timeout         time.Duration
 	DownloadTimeout time.Duration
 	TargetFolder    string
+
+	Downloader     installer.Downloader
+	RuntimeManager installer.RuntimeManager
+	Provisioner    provisioner.Provisioner
+	Flavor         installer.ServerFlavor
 }
 
 type InstallServiceOpt func(config *InstallServiceConfig)
 
 type Installer interface {
 	Install(ctx context.Context, configs ...config.InstanceOpt) error
-	DownloadServer(ctx context.Context, v mojang.VersionInfoResponse, dest string) (string, error)
-	CreateStartScript(cfg *config.InstanceOpts) error
-	CreateServerProperties(cfg *config.InstanceOpts) error
-	Eula(dest string) (string, error)
 }
 
 type vanillaInstaller struct {
 	cfg InstallServiceConfig
-	c   mojang.Client
+	d   installer.Downloader
+	r   installer.RuntimeManager
+	p   provisioner.Provisioner
+	f   installer.ServerFlavor
 }
 
 // NewInstallService creates a new installer
@@ -55,9 +58,25 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 		c(cfg)
 	}
 
+	if cfg.Downloader == nil {
+		cfg.Downloader = installer.NewDownloader(cfg.DownloadTimeout)
+	}
+	if cfg.RuntimeManager == nil {
+		cfg.RuntimeManager = installer.NewRuntimeManager(cfg.DownloadTimeout)
+	}
+	if cfg.Provisioner == nil {
+		cfg.Provisioner = provisioner.NewProvisioner()
+	}
+	if cfg.Flavor == nil {
+		cfg.Flavor = installer.NewVanillaFlavor(mojang.NewClient(mojang.WithTimeout(cfg.Timeout)))
+	}
+
 	return &vanillaInstaller{
 		cfg: *cfg,
-		c:   mojang.NewClient(mojang.WithTimeout(cfg.Timeout)),
+		d:   cfg.Downloader,
+		r:   cfg.RuntimeManager,
+		p:   cfg.Provisioner,
+		f:   cfg.Flavor,
 	}
 }
 
@@ -77,88 +96,62 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...config.Instan
 
 	fmt.Printf("#####################\nInstalling server\n----------------------\nversion: %s\nserver properties:\n%s\n#####################\n\n", cfg.VersionName, cfg.ServerPropertiesString())
 
-	ver, err := i.c.ListVersions(ctx)
+	info, err := i.f.GetVersionInfo(ctx, cfg.VersionName)
 	if err != nil {
-		err = fmt.Errorf("getting available versions: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to list available versions")
-		return err
+		return fmt.Errorf("getting version info for %s: %w", cfg.VersionName, err)
 	}
 
-	v, err := ver.GetVersion(cfg.VersionName)
-	if err != nil {
-		err = fmt.Errorf("getting online versions list for Name '%s': %w", cfg.VersionName, err)
-		log.With("error", err, "version", cfg.VersionName).ErrorContext(ctx, "Failed to get version for Name")
-		return err
+	if err := i.p.CreateServerProperties(cfg.AbsoluteDestPath(), cfg.SrvProps); err != nil {
+		return fmt.Errorf("creating server properties file: %w", err)
 	}
 
-	log = log.With("version", v.ID, "version_type", v.Type)
-
-	cfg.VersionInfo, err = i.c.GetVersionInfo(ctx, *v)
+	sf, err := i.d.DownloadServer(ctx, info.DownloadURL, info.SHA1, cfg.AbsoluteDestPath())
 	if err != nil {
-		err = fmt.Errorf("getting version info for Name '%s': %w", cfg.VersionName, err)
-		log.With("error", err).ErrorContext(ctx, "Failed to fetch version info for '%s (%s)'", v.ID, cfg.VersionName)
-		return err
-	}
-
-	if err := i.CreateServerProperties(cfg); err != nil {
-		err = fmt.Errorf("creating server properties file: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to create server properties file")
-		return err
-	}
-
-	sf, err := i.DownloadServer(ctx, *cfg.VersionInfo, cfg.AbsoluteDestPath())
-	if err != nil {
-		err = fmt.Errorf("downloading server file: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to download server file")
-		return err
+		return fmt.Errorf("downloading server file: %w", err)
 	}
 
 	log.With("server_file", sf).DebugContext(ctx, "Dowloaded server file")
 
-	if _, err := java.Install(ctx, filepath.Join(cfg.AbsoluteDestPath(), "java"), cfg.VersionInfo.JavaVersion.MajorVersion, runtime.GOARCH, runtime.GOOS, i.cfg.DownloadTimeout); err != nil {
-		err = fmt.Errorf("downloading jdk package: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to download jdk")
-		return err
+	if _, err := i.r.InstallJava(ctx, filepath.Join(cfg.AbsoluteDestPath(), "java"), info.JavaVersion, runtime.GOARCH, runtime.GOOS); err != nil {
+		return fmt.Errorf("installing jdk: %w", err)
 	}
 
-	if err := i.CreateStartScript(cfg); err != nil {
-		err = fmt.Errorf("creating start script: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to create start script")
-		return err
+	if err := i.p.CreateStartScript(cfg.AbsoluteDestPath(),
+		provisioner.WithHeadless(cfg.Headless),
+		provisioner.WithJDKPath("${INSTALL_PATH}/java/jdk/bin"),
+		provisioner.WithMemLimit(cfg.MemoryOpt),
+		provisioner.WithServerFile("server.jar"),
+		provisioner.WithLogConfigFile(cfg.AddLogConfig),
+	); err != nil {
+		return fmt.Errorf("creating start script: %w", err)
 	}
 
-	if err := i.CreateStopScript(cfg.AbsoluteDestPath()); err != nil {
-		err = fmt.Errorf("creating stop script: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to create stop script")
-		return err
+	if err := i.p.CreateStopScript(cfg.AbsoluteDestPath()); err != nil {
+		return fmt.Errorf("creating stop script: %w", err)
 	}
 
 	if cfg.AddLogConfig {
-		if err := i.CreateLoggingConfig(cfg.AbsoluteDestPath()); err != nil {
-			err = fmt.Errorf("generating log config file: %w", err)
-			log.With("error", err).ErrorContext(ctx, "Failed to create log4j2.xml file")
-			return err
+		if err := i.p.CreateLoggingConfig(cfg.AbsoluteDestPath(), cfg.AbsoluteDestPath()); err != nil {
+			return fmt.Errorf("generating log config file: %w", err)
 		}
 	}
 
-	if _, err := i.Eula(cfg.AbsoluteDestPath()); err != nil {
-		err = fmt.Errorf("creating eula.txt file: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to create eula.txt file")
-		return err
-	}
-	if err := i.createVersionFile(ctx, cfg.AbsoluteDestPath(), *cfg); err != nil {
-		err = fmt.Errorf("creating version file: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to create versions.json file")
-		return err
+	if err := i.p.CreateEula(cfg.AbsoluteDestPath(), config.DefaultEulaValue); err != nil {
+		return fmt.Errorf("creating eula.txt file: %w", err)
 	}
 
+	if err := i.createVersionFile(ctx, cfg.AbsoluteDestPath(), *cfg, info); err != nil {
+		return fmt.Errorf("creating version file: %w", err)
+	}
+
+	// Whitelist requires mojang API specifically for UUID lookups
+	// For now we only support it for vanilla if the flavor provides a client or we keep using mojang client directly.
+	// Purpur might support it too if they use same UUIDs.
 	if err := i.createWhitelistFile(ctx, *cfg); err != nil {
-		err = fmt.Errorf("creating whitelist file: %w", err)
-		log.With("error", err).ErrorContext(ctx, "Failed to create whitelist.json file")
-		return err
+		return fmt.Errorf("creating whitelist file: %w", err)
 	}
 
-	return err
+	return nil
 }
 
 func (i *vanillaInstaller) createWhitelistFile(_ context.Context, opts config.InstanceOpts) error {
@@ -168,164 +161,44 @@ func (i *vanillaInstaller) createWhitelistFile(_ context.Context, opts config.In
 
 	f, err := os.Create(filepath.Join(opts.Dest, "whitelist.json"))
 	if err != nil {
-		err = fmt.Errorf("creating whitelist file: %w", err)
-		return err
+		return fmt.Errorf("creating whitelist file: %w", err)
 	}
+	defer f.Close()
 
-	usrs, err := i.c.GetUsersInfo(opts.WhitelistUsernames...)
+	// Direct use of mojang client for whitelist for now
+	c := mojang.NewClient(mojang.WithTimeout(i.cfg.Timeout))
+	usrs, err := c.GetUsersInfo(opts.WhitelistUsernames...)
 	if err != nil {
-		err = fmt.Errorf("getting users info: %w", err)
-		return err
+		return fmt.Errorf("getting users info: %w", err)
 	}
 
 	if err := json.NewEncoder(f).Encode(usrs); err != nil {
-		err = fmt.Errorf("writing whitelist file: %w", err)
-		return err
+		return fmt.Errorf("writing whitelist file: %w", err)
 	}
 
 	return nil
 }
 
-func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder string, opts config.InstanceOpts) error {
+func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder string, opts config.InstanceOpts, info *installer.FlavorVersionInfo) error {
 
 	f, err := os.Create(filepath.Join(destFolder, cfg.VersionsFileName))
 	if err != nil {
-		err = fmt.Errorf("creating version.json file: %w", err)
-		return err
+		return fmt.Errorf("creating version.json file: %w", err)
 	}
+	defer f.Close()
 
-	info := cfg.GetVersionInfo()
+	verInfo := cfg.GetVersionInfo()
 
 	return json.NewEncoder(f).Encode(&model.VersionsInfo{
-		JavaVersion: opts.VersionInfo.JavaVersion.MajorVersion,
-		MineVersion: opts.VersionInfo.ID,
-		MineFlavour: model.MineFlavourVanilla,
+		JavaVersion: info.JavaVersion,
+		MineVersion: info.Version,
+		MineFlavour: i.f.Name(),
 		CliVersion: model.CliVersion{
-			Version:   info.Version,
-			Commit:    info.Commit,
-			BuildDate: info.BuildDate,
+			Version:   verInfo.Version,
+			Commit:    verInfo.Commit,
+			BuildDate: verInfo.BuildDate,
 		},
 	})
-}
-
-// DownloadServer downloads server file
-func (i *vanillaInstaller) DownloadServer(ctx context.Context, v mojang.VersionInfoResponse, dest string) (string, error) {
-	destFile := filepath.Join(dest, utils.GetFileName(v.Downloads.Server.URL))
-	if err := utils.DownloadFile(ctx, i.cfg.DownloadTimeout, v.Downloads.Server.URL, destFile); err != nil {
-		err = fmt.Errorf("downloading server file: %w", err)
-		return "", err
-	}
-
-	if err := utils.ValidateFileIntegrity(ctx, destFile, v.Downloads.Server.SHA1); err != nil {
-		return "", err
-	}
-
-	return destFile, nil
-}
-
-func (i *vanillaInstaller) CreateServerProperties(cfg *config.InstanceOpts) error {
-	destFile := filepath.Join(cfg.AbsoluteDestPath(), "server.properties")
-	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
-	if err != nil {
-		err = fmt.Errorf("creating server properties file: %w", err)
-		return err
-	}
-
-	if err := properties.NewEncoder(f).Encode(cfg.SrvProps); err != nil {
-		err = fmt.Errorf("encoding server properties content to file: %w", err)
-		return err
-	}
-
-	return nil
-}
-
-// CreateStartScript generates the start script
-func (i *vanillaInstaller) CreateStartScript(cfg *config.InstanceOpts) error {
-
-	destFile := filepath.Join(cfg.AbsoluteDestPath(), provisioner.StartScriptFileName)
-
-	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
-	if err != nil {
-		err = fmt.Errorf("creating server startup script: %w", err)
-		return err
-	}
-
-	script, err := provisioner.StartScript(
-		provisioner.WithHeadless(cfg.Headless),
-		provisioner.WithJDKPath("${INSTALL_PATH}/java/jdk/bin"),
-		provisioner.WithMemLimit(cfg.MemoryOpt),
-		provisioner.WithServerFile("server.jar"),
-		provisioner.WithLogConfigFile(cfg.AddLogConfig),
-	)
-	if err != nil {
-		err = fmt.Errorf("creating server startup script: %w", err)
-		return err
-	}
-
-	if _, err := f.Write([]byte(script)); err != nil {
-		err = fmt.Errorf("writing start script to file: %w", err)
-		return err
-	}
-	return nil
-}
-
-// CreateStopScript generates the stop server script
-func (i *vanillaInstaller) CreateStopScript(dest string) error {
-	destFile := filepath.Join(dest, provisioner.StopScriptFileName)
-
-	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
-	if err != nil {
-		err = fmt.Errorf("creating server stop script: %w", err)
-		return err
-	}
-
-	scp, err := provisioner.StopScript()
-	if err != nil {
-		err = fmt.Errorf("generating stop script content: %w", err)
-		return err
-	}
-
-	if _, err := f.Write([]byte(scp)); err != nil {
-		err = fmt.Errorf("writing stop script to file: %w", err)
-		return err
-	}
-	return nil
-}
-
-// CreateLoggingConfig generates log4j2.xml logging configuration file
-func (i *vanillaInstaller) CreateLoggingConfig(dest string) error {
-	f, err := os.OpenFile(filepath.Join(dest, "log4j2.xml"), os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
-	if err != nil {
-		err = fmt.Errorf("creating server startup script: %w", err)
-		return err
-	}
-
-	logf, err := provisioner.LoggingConfiguration(dest)
-	if err != nil {
-		err = fmt.Errorf("generating logging configuration file content: %w", err)
-		return err
-	}
-
-	if _, err := f.Write([]byte(logf)); err != nil {
-		err = fmt.Errorf("writing logging configuration file to file: %w", err)
-		return err
-	}
-	return nil
-}
-
-func (i *vanillaInstaller) Eula(dest string) (string, error) {
-	eulaPath := filepath.Join(dest, "eula.txt")
-	f, err := os.Create(eulaPath)
-	if err != nil {
-		err = fmt.Errorf("creating eula file: %w", err)
-		return "", err
-	}
-	if err := properties.NewEncoder(f).Encode(config.DefaultEulaValue); err != nil {
-		err = fmt.Errorf("writing eula contents to file: %w", err)
-		return "", err
-	}
-
-	return eulaPath, nil
 }
 
 func WithTimeout(t time.Duration) InstallServiceOpt {
@@ -337,6 +210,30 @@ func WithTimeout(t time.Duration) InstallServiceOpt {
 func WithDownloadTimeout(t time.Duration) InstallServiceOpt {
 	return func(cfg *InstallServiceConfig) {
 		cfg.DownloadTimeout = t
+	}
+}
+
+func WithDownloader(d installer.Downloader) InstallServiceOpt {
+	return func(cfg *InstallServiceConfig) {
+		cfg.Downloader = d
+	}
+}
+
+func WithRuntimeManager(r installer.RuntimeManager) InstallServiceOpt {
+	return func(cfg *InstallServiceConfig) {
+		cfg.RuntimeManager = r
+	}
+}
+
+func WithProvisioner(p provisioner.Provisioner) InstallServiceOpt {
+	return func(cfg *InstallServiceConfig) {
+		cfg.Provisioner = p
+	}
+}
+
+func WithFlavor(f installer.ServerFlavor) InstallServiceOpt {
+	return func(cfg *InstallServiceConfig) {
+		cfg.Flavor = f
 	}
 }
 

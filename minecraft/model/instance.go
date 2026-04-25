@@ -68,6 +68,7 @@ type MineFlavour string
 
 const (
 	MineFlavourVanilla MineFlavour = "vanilla"
+	MineFlavourPurpur  MineFlavour = "purpur"
 )
 
 type VersionsInfo struct {

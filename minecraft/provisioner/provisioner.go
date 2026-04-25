@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
+	"github.com/eldius/mineserver-manager/minecraft/model"
+	"github.com/eldius/properties"
 	"io"
 	"io/fs"
+	"os"
 	"path/filepath"
 	"text/template"
 )
@@ -24,6 +27,77 @@ var (
 
 func init() {
 	tpl = template.Must(template.ParseFS(templateFiles, "templates/**"))
+}
+
+type Provisioner interface {
+	CreateServerProperties(dest string, props *model.ServerProperties) error
+	CreateStartScript(dest string, opts ...StartupOption) error
+	CreateStopScript(dest string) error
+	CreateLoggingConfig(dest string, logfileDestDir string) error
+	CreateEula(dest string, eula *model.Eula) error
+}
+
+type vanillaProvisioner struct{}
+
+func NewProvisioner() Provisioner {
+	return &vanillaProvisioner{}
+}
+
+func (p *vanillaProvisioner) CreateServerProperties(dest string, props *model.ServerProperties) error {
+	destFile := filepath.Join(dest, "server.properties")
+	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0644)
+	if err != nil {
+		return fmt.Errorf("creating server properties file: %w", err)
+	}
+	defer f.Close()
+
+	if err := properties.NewEncoder(f).Encode(props); err != nil {
+		return fmt.Errorf("encoding server properties: %w", err)
+	}
+
+	return nil
+}
+
+func (p *vanillaProvisioner) CreateStartScript(dest string, opts ...StartupOption) error {
+	script, err := StartScript(opts...)
+	if err != nil {
+		return err
+	}
+	return p.writeFile(filepath.Join(dest, StartScriptFileName), script, 0755)
+}
+
+func (p *vanillaProvisioner) CreateStopScript(dest string) error {
+	script, err := StopScript()
+	if err != nil {
+		return err
+	}
+	return p.writeFile(filepath.Join(dest, StopScriptFileName), script, 0755)
+}
+
+func (p *vanillaProvisioner) CreateLoggingConfig(dest string, logfileDestDir string) error {
+	config, err := LoggingConfiguration(logfileDestDir)
+	if err != nil {
+		return err
+	}
+	return p.writeFile(filepath.Join(dest, "log4j2.xml"), config, 0644)
+}
+
+func (p *vanillaProvisioner) CreateEula(dest string, eula *model.Eula) error {
+	destFile := filepath.Join(dest, "eula.txt")
+	f, err := os.Create(destFile)
+	if err != nil {
+		return fmt.Errorf("creating eula file: %w", err)
+	}
+	defer f.Close()
+
+	if err := properties.NewEncoder(f).Encode(eula); err != nil {
+		return fmt.Errorf("writing eula contents: %w", err)
+	}
+	return nil
+}
+
+func (p *vanillaProvisioner) writeFile(path string, content string, perm os.FileMode) error {
+	return os.WriteFile(path, []byte(content), perm)
 }
 
 func readTemplateFile(filename string) (fs.File, error) {
