@@ -24,10 +24,12 @@ func TestDownloader_DownloadServer(t *testing.T) {
 
 		url := "https://piston-data.mojang.com/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar"
 		sha1 := "fe5c3e7c6983ac7ea8a23bd9f2d8b235128633e8"
-		
+
 		dest, err := os.MkdirTemp(os.TempDir(), "mine-test-*")
 		assert.Nil(t, err)
-		defer os.RemoveAll(dest)
+		defer func() {
+			_ = os.RemoveAll(dest)
+		}()
 
 		serverFile, err := d.DownloadServer(ctx, url, sha1, dest)
 		assert.Nil(t, err)
@@ -50,10 +52,12 @@ func TestDownloader_DownloadServer(t *testing.T) {
 
 		url := "https://piston-data.mojang.com/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar"
 		sha1 := "2e49d5731f612a27506fc777ee146fc4080312de"
-		
+
 		dest, err := os.MkdirTemp(os.TempDir(), "mine-test-*")
 		assert.Nil(t, err)
-		defer os.RemoveAll(dest)
+		defer func() {
+			_ = os.RemoveAll(dest)
+		}()
 
 		serverFile, err := d.DownloadServer(ctx, url, sha1, dest)
 		assert.NotNil(t, err)

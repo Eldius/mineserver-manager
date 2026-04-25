@@ -1,5 +1,5 @@
 
-TEST_SERVER ?= 192.168.0.42
+TEST_SERVER ?= 192.168.0.185
 
 
 test:

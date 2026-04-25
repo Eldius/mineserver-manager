@@ -2,9 +2,6 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"github.com/eldius/mineserver-manager/internal/minecraft"
-
 	"github.com/spf13/cobra"
 )
 
@@ -14,22 +11,7 @@ var backupSaveCmd = &cobra.Command{
 	Short: "Save a backup from instance",
 	Long:  `Save a backup from instance.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		ctx := context.Background()
-		s := minecraft.NewBackupService()
-		backupFile, err := s.Backup(ctx, backupSaveOpts.instance, backupSaveOpts.destFolder)
-		if err != nil {
-			fmt.Printf("Failed to make a backup: %v\n", err)
-			return err
-		}
-
-		if backupSaveOpts.maxBackupFiles > 0 {
-			if err := s.RolloverBackupFiles(ctx, backupSaveOpts.destFolder, backupFile.Name, backupSaveOpts.maxBackupFiles); err != nil {
-				fmt.Printf("Failed to make a backup rollover: %v\n", err)
-				return err
-			}
-		}
-		fmt.Printf("Backup completed to '%s'!\n", backupFile)
-		return nil
+		return runBackupSave(context.Background(), backupSaveOpts)
 	},
 }
 

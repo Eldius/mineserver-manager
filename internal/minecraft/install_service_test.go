@@ -3,8 +3,8 @@ package minecraft
 import (
 	"context"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/minecraft/config"
 	"github.com/eldius/mineserver-manager/internal/installer"
+	"github.com/eldius/mineserver-manager/internal/minecraft/config"
 	"github.com/eldius/mineserver-manager/internal/model"
 	"github.com/eldius/mineserver-manager/internal/provisioner"
 	"github.com/h2non/gock"
@@ -83,17 +83,49 @@ func (m *mockFlavor) GetVersionInfo(ctx context.Context, version string) (*insta
 	return args.Get(0).(*installer.FlavorVersionInfo), args.Error(1)
 }
 
+type mockRepository struct {
+	mock.Mock
+}
+
+func (m *mockRepository) SaveInstance(ctx context.Context, i *model.Instance) error {
+	args := m.Called(ctx, i)
+	return args.Error(0)
+}
+
+func (m *mockRepository) GetInstance(ctx context.Context, id string) (*model.Instance, error) {
+	args := m.Called(ctx, id)
+	return args.Get(0).(*model.Instance), args.Error(1)
+}
+
+func (m *mockRepository) ListInstances(ctx context.Context) ([]model.Instance, error) {
+	args := m.Called(ctx)
+	return args.Get(0).([]model.Instance), args.Error(1)
+}
+
+func (m *mockRepository) DeleteInstance(ctx context.Context, id string) error {
+	args := m.Called(ctx, id)
+	return args.Error(0)
+}
+
+func (m *mockRepository) Close() error {
+	args := m.Called()
+	return args.Error(0)
+}
+
 func TestInstaller_Install(t *testing.T) {
 	defer gock.Off()
 	t.Run("should install vanilla server successfully", func(t *testing.T) {
 		ctx := context.Background()
 		dest, _ := os.MkdirTemp(os.TempDir(), "mine-install-test-*")
-		defer os.RemoveAll(dest)
+		defer func() {
+			_ = os.RemoveAll(dest)
+		}()
 
 		md := new(mockDownloader)
 		mr := new(mockRuntimeManager)
 		mp := new(mockProvisioner)
 		mf := new(mockFlavor)
+		mrepo := new(mockRepository)
 
 		info := &installer.FlavorVersionInfo{
 			Version:     "1.20",
@@ -112,6 +144,7 @@ func TestInstaller_Install(t *testing.T) {
 		mp.On("CreateStartScript", mock.Anything, mock.Anything).Return(nil)
 		mp.On("CreateStopScript", mock.Anything).Return(nil)
 		mp.On("CreateEula", mock.Anything, mock.Anything).Return(nil)
+		mrepo.On("SaveInstance", mock.Anything, mock.Anything).Return(nil)
 
 		s := NewInstallService(
 			WithTimeout(5*time.Second),
@@ -119,9 +152,10 @@ func TestInstaller_Install(t *testing.T) {
 			WithRuntimeManager(mr),
 			WithProvisioner(mp),
 			WithFlavor(mf),
+			WithRepository(mrepo),
 		)
 
-		err := s.Install(ctx, 
+		err := s.Install(ctx,
 			config.WithVersion("1.20"),
 			config.ToDestinationFolder(dest),
 		)
@@ -131,5 +165,6 @@ func TestInstaller_Install(t *testing.T) {
 		mr.AssertExpectations(t)
 		mp.AssertExpectations(t)
 		mf.AssertExpectations(t)
+		mrepo.AssertExpectations(t)
 	})
 }

@@ -1,14 +1,9 @@
 package model
 
 import (
-	"fmt"
-	"github.com/asdine/storm/v3"
-	cfg "github.com/eldius/mineserver-manager/internal/config"
 	"github.com/google/uuid"
 	"time"
 )
-
-var db *storm.DB
 
 type Instance struct {
 	ID   string `storm:"index"`
@@ -33,28 +28,6 @@ func NewInstance(name, path string, serverProperties ServerProperties) *Instance
 		Path:             path,
 		InstallDate:      time.Now(),
 		ServerProperties: serverProperties,
-	}
-}
-
-func Persist(i *Instance) (*Instance, error) {
-	if db == nil {
-		openDB()
-	}
-
-	if err := db.Save(i); err != nil {
-		err = fmt.Errorf("saving instance to db: %w", err)
-		return nil, err
-	}
-
-	return i, nil
-}
-
-func openDB() {
-	var err error
-	db, err = storm.Open(cfg.GetAppHomePath())
-	if err != nil {
-		err = fmt.Errorf("opening db file: %w", err)
-		panic(err)
 	}
 }
 

@@ -15,22 +15,34 @@ import (
 var (
 	// PackageVersions is a map of Java Runtime download links
 	PackageVersions = map[int]map[string]map[string]string{
+		8: {
+			"linux": {
+				"amd64": "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u292-b10_openj9-0.26.0/OpenJDK8U-jdk_x64_linux_openj9_8u292b10_openj9-0.26.0.tar.gz",
+				"arm64": "https://github.com/AdoptOpenJDK/openjdk8-binaries/releases/download/jdk8u292-b10_openj9-0.26.0/OpenJDK8U-jdk_aarch64_linux_openj9_8u292b10_openj9-0.26.0.tar.gz",
+			},
+		},
+		16: {
+			"linux": {
+				"amd64": "https://github.com/AdoptOpenJDK/openjdk16-binaries/releases/download/jdk-16.0.1%2B9_openj9-0.26.0/OpenJDK16U-jdk_x64_linux_openj9_16.0.1_9_openj9-0.26.0.tar.gz",
+				"arm64": "https://github.com/AdoptOpenJDK/openjdk16-binaries/releases/download/jdk-16.0.1%2B9_openj9-0.26.0/OpenJDK16U-jdk_aarch64_linux_openj9_16.0.1_9_openj9-0.26.0.tar.gz",
+			},
+		},
+		17: {
+			"linux": {
+				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-17.0.18-linux-x64.tar.gz",
+				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-17.0.18-linux-aarch64.tar.gz",
+			},
+		},
 		21: {
 			"linux": {
 				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-21.0.4-linux-x64.tar.gz",
 				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-21.0.4-linux-aarch64.tar.gz",
 			},
 		},
-		17: {
+		25: {
 			"linux": {
-				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-x64.tar.gz",
-				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-17.0.7-linux-aarch64.tar.gz",
-			},
-		},
-		11: {
-			"linux": {
-				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-11.0.19-linux-x64.tar.gz",
-				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-11.0.19-linux-aarch64.tar.gz",
+				"amd64": "https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-25.0.2-linux-x64.tar.gz",
+				"arm64": "https://aka.ms/download-jdk/microsoft-jdk-debugsymbols-25.0.2-linux-aarch64.tar.gz",
 			},
 		},
 	}
@@ -54,7 +66,7 @@ func Download(ctx context.Context, v int, arch, osName string, timeout time.Dura
 	return dest, nil
 }
 
-// Install downloads and unpack JDK to destination folder
+// Install downloads and unpack JDK to a destination folder
 func Install(ctx context.Context, dest string, v int, arch, osName string, timeout time.Duration) (string, error) {
 	log := logger.GetLogger().With(slog.String("action", "install_jdk"), slog.Int("jdk_version", v))
 

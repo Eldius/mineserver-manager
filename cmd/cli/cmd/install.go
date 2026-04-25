@@ -2,18 +2,10 @@ package cmd
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	cfg "github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/logger"
-	"github.com/eldius/mineserver-manager/internal/minecraft"
-	"github.com/eldius/mineserver-manager/internal/minecraft/config"
-	"github.com/eldius/mineserver-manager/internal/installer"
-	"github.com/eldius/mineserver-manager/internal/mojang"
-	"github.com/eldius/mineserver-manager/internal/utils"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"log/slog"
 	"time"
 )
 
@@ -26,49 +18,8 @@ var installCmd = &cobra.Command{
 		logger.GetLogger().With("headless", installOpts.Headless).Info("debugging")
 		ctx := context.Background()
 
-		var flavor installer.ServerFlavor
-		switch installOpts.Flavor {
-		case "vanilla":
-			flavor = installer.NewVanillaFlavor(mojang.NewClient(mojang.WithTimeout(cfg.GetMinecraftApiTimeout())))
-		case "purpur":
-			// For now, fail if purpur is selected until implemented
-			err := errors.New("purpur flavor not yet implemented")
-			slog.With("error", err).ErrorContext(ctx, "failed to initialize flavor")
+		if err := runInstall(ctx, installOpts); err != nil {
 			panic(err)
-		default:
-			err := fmt.Errorf("invalid flavor: %s", installOpts.Flavor)
-			slog.With("error", err).ErrorContext(ctx, "failed to initialize flavor")
-			panic(err)
-		}
-
-		if installOpts.JustListVersions {
-			versions, err := flavor.ListVersions(ctx)
-			if err != nil {
-				err = fmt.Errorf("listing available versions: %w", err)
-				slog.With("error", err).ErrorContext(ctx, "failed to list available versions")
-				panic(err)
-			}
-			for _, v := range versions {
-				fmt.Printf("- %s\n", v)
-			}
-		} else {
-			client := minecraft.NewInstallService(
-				minecraft.WithTimeout(cfg.GetMinecraftApiTimeout()),
-				minecraft.WithDownloadTimeout(cfg.GetMinecraftDownloadTimeout()),
-				minecraft.WithFlavor(flavor),
-			)
-			opts := append(
-				installOpts.ToInstanceOpts(),
-				config.WithVersion(installOpts.ServerVersion),
-				config.ToDestinationFolder(installOpts.DestinationFolder),
-				config.WithHeadlessConfig(installOpts.Headless),
-				config.WithServerFlavour(installOpts.Flavor),
-			)
-			if err := client.Install(ctx, opts...); err != nil {
-				err = fmt.Errorf("installing server: %w", err)
-				slog.With("error", err).ErrorContext(ctx, "failed to install server")
-				panic(err)
-			}
 		}
 	},
 }
@@ -93,40 +44,6 @@ type installCmdOpts struct {
 	RconEnabled bool
 
 	users []string
-}
-
-func (o installCmdOpts) ToInstanceOpts() []config.InstanceOpt {
-	opts := []config.InstanceOpt{config.WithMemoryLimit(o.MemoryLimit)}
-	if o.Motd != "" {
-		opts = append(opts, config.WithServerPropsMotd(o.Motd))
-	}
-	if o.LevelName != "" {
-		opts = append(opts, config.WithServerPropsLevelName(o.LevelName))
-	}
-	if o.Seed != "" {
-		opts = append(opts, config.WithServerPropsSeed(o.Seed))
-	}
-	if o.RconEnabled {
-		if o.RconPass == "" {
-			passwd, err := utils.PasswordPrompt()
-			if err != nil {
-				err = fmt.Errorf("rcon pass promtp: %w", err)
-				panic(err)
-			}
-			o.RconPass = passwd
-		}
-		if o.RconPass == "" {
-			err := errors.New("RCON password mustn't be empty when RCON is enabled")
-			panic(err)
-		}
-		opts = append(opts, config.WithServerPropsRconEnabled(o.RconPort, o.RconPass))
-	}
-
-	if len(o.users) > 0 {
-		opts = append(opts, config.WithWhitelistedUsers(o.users))
-	}
-
-	return opts
 }
 
 var (
@@ -158,7 +75,6 @@ func init() {
 
 	installCmd.Flags().Duration("download-timeout", 300*time.Second, "Download timeout configuration (defaults to 300s/5m)")
 	if err := viper.BindPFlag(cfg.AppInstallDownloadTimeoutPropKey, installCmd.Flags().Lookup("download-timeout")); err != nil {
-		err = fmt.Errorf("binding artifact download timeout property: %w", err)
 		panic(err)
 	}
 }

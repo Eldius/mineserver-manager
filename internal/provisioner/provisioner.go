@@ -49,7 +49,9 @@ func (p *vanillaProvisioner) CreateServerProperties(dest string, props *model.Se
 	if err != nil {
 		return fmt.Errorf("creating server properties file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	if err := properties.NewEncoder(f).Encode(props); err != nil {
 		return fmt.Errorf("encoding server properties: %w", err)
@@ -88,7 +90,9 @@ func (p *vanillaProvisioner) CreateEula(dest string, eula *model.Eula) error {
 	if err != nil {
 		return fmt.Errorf("creating eula file: %w", err)
 	}
-	defer f.Close()
+	defer func() {
+		_ = f.Close()
+	}()
 
 	if err := properties.NewEncoder(f).Encode(eula); err != nil {
 		return fmt.Errorf("writing eula contents: %w", err)

@@ -6,20 +6,21 @@
 
 - **Purpose**: Streamline Minecraft server management, including version discovery, installation, Java Runtime Environment (JRE) management, and backups.
 - **Architecture**:
-  - **CLI Layer (`cmd/cli`)**: Built using [Cobra](https://github.com/spf13/cobra) for commands and [Viper](https://github.com/spf13/viper) for configuration.
-  - **Core Logic (`minecraft/`)**:
-    - `install_service.go`: Orchestrates the full installation process (downloading JARs, setting up JRE, generating scripts).
-    - `backup_service.go`: Manages ZIP-based backups with automated rollover.
-  - **Ecosystem Integration**:
-    - `mojang/`: Client for interacting with official Mojang APIs for version information.
-    - `java/`: Manages automated downloading and installation of appropriate Microsoft OpenJDK versions based on the Minecraft version requirements.
-  - **Utilities (`utils/`)**: Common helpers for networking, file compression (ZIP/TarGZ), and system operations.
+  - **CLI Layer (`cmd/cli`)**: Built using [Cobra](https://github.com/spf13/cobra) and [Viper](https://github.com/spf13/viper). Command logic is delegated to runner functions in `cmd/cli/cmd/*_runner.go`.
+  - **Internal Logic (`internal/`)**:
+    - **`minecraft/`**: Core orchestration logic for server management.
+    - **`installer/`**: Specialized components for fetching artifacts (`Downloader`) and managing JDKs (`RuntimeManager`). Supports multiple server flavors (e.g., Vanilla, Purpur) via a strategy pattern.
+    - **`provisioner/`**: Handles filesystem layout, template rendering (`start.sh`, `stop.sh`, `log4j2.xml`), and initial configuration.
+    - **`repository/`**: Persistence layer using a repository pattern (currently implemented with [Storm](https://github.com/asdine/storm)).
+    - **`model/`**: Pure domain data models (Instances, ServerProperties, etc.), decoupled from persistence and configuration logic.
+    - **`mojang/`**: Client for interacting with official Mojang APIs.
+    - **`utils/`**: Shared internal utilities for networking, compression, and system operations.
 
 ## Technologies
 
 - **Language**: Go (version 1.26.2+)
-- **CLI Framework**: Cobra
-- **Configuration**: Viper & `initial-config-go`
+- **CLI Framework**: Cobra & Viper
+- **Persistence**: Storm (BoltDB based)
 - **Logging**: `log/slog`
 - **Testing**: `testify`, `testcontainers-go`, `gock`
 - **Release**: `goreleaser`
@@ -28,17 +29,17 @@
 
 ### Development
 - **Build**: `go build -o mineserver ./cmd/cli`
-- **Test**: `make test` (Runs tests with coverage)
-- **Lint**: `make lint` (Requires `golangci-lint`)
-- **Vulnerability Check**: `make vulncheck` (Requires `govulncheck`)
-- **Local Snapshot**: `make snapshot-local` (Uses `goreleaser`)
+- **Test**: `go test ./...`
+- **Tidy**: `go mod tidy`
+- **Lint**: `make lint`
+- **Vulnerability Check**: `make vulncheck`
 
 ### Application Usage
 - **Install Server**:
   ```bash
-  mineserver install --version 1.21.3 --dest ./my-server --motd "My Awesome Server" --memory-limit 2g
+  mineserver install --flavor vanilla --version 1.21.3 --dest ./my-server --motd "My Awesome Server" --memory-limit 2g
   ```
-- **List Versions**: `mineserver install --list`
+- **List Versions**: `mineserver install --list` (defaults to vanilla flavor)
 - **Backup Instance**:
   ```bash
   mineserver backup save --instance-folder ./my-server --backup-folder ./backups --max-backup-files 5
@@ -50,9 +51,8 @@
 
 ## Development Conventions
 
-- **Configuration**: The application looks for a configuration file in `$HOME/.mineserver/config.yaml` or the current directory.
-- **Logging**: Structured logging using `slog` is preferred.
-- **Error Handling**: Use `fmt.Errorf("...: %w", err)` for error wrapping to maintain context.
-- **Service Pattern**: Business logic is typically encapsulated in services (e.g., `InstallService`, `BackupService`) using the functional options pattern for configuration.
-- **JRE Management**: The tool automatically maps Minecraft versions to required Java versions (11, 17, 21) and downloads the appropriate Microsoft OpenJDK build for Linux (amd64/arm64).
-- **Start/Stop Scripts**: Every installation generates `start.sh` and `stop.sh` scripts in the destination folder, pre-configured with the correct Java path and memory limits.
+- **Internal Package**: Almost all domain logic resides in `internal/` to prevent external imports and maintain a clean API.
+- **Dependency Injection**: Services use functional options and interface-based components for better testability and modularity.
+- **Lean Commands**: Cobra command files focus on flag definition and validation, delegating action execution to runner functions.
+- **Service Pattern**: Orchestration logic is encapsulated in services (e.g., `InstallService`, `BackupService`).
+- **Repository Pattern**: All database interactions must go through the `Repository` interface defined in `internal/repository`.

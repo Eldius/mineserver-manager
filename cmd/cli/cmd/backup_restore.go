@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"errors"
-	"github.com/eldius/mineserver-manager/internal/minecraft"
 
 	"github.com/spf13/cobra"
 )
@@ -13,14 +12,11 @@ var backupRestoreCmd = &cobra.Command{
 	Use:   "restore",
 	Short: "Restore instance backup",
 	Long:  `Restore instance backup.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		if backupRestoreOpts.fromFile == "" {
-			panic(errors.New("invalid input file"))
+			return errors.New("invalid input file")
 		}
-		ctx := context.Background()
-		if err := minecraft.NewBackupService().Restore(ctx, backupRestoreOpts.toFolder, backupRestoreOpts.fromFile); err != nil {
-			panic(err)
-		}
+		return runBackupRestore(context.Background(), backupRestoreOpts)
 	},
 }
 
@@ -34,6 +30,6 @@ var (
 func init() {
 	backupCmd.AddCommand(backupRestoreCmd)
 
+	backupRestoreCmd.Flags().StringVar(&backupRestoreOpts.fromFile, "backup-file", "", "Backup file to be restored")
 	backupRestoreCmd.Flags().StringVar(&backupRestoreOpts.toFolder, "instance-folder", ".", "Installation root directory (defaults to current directory)")
-	backupRestoreCmd.Flags().StringVar(&backupRestoreOpts.fromFile, "backup-file", "", "Backup file destination folder (defaults to .backups on current directory)")
 }
