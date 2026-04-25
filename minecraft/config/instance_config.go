@@ -2,6 +2,7 @@ package config
 
 import (
 	"bytes"
+	"github.com/eldius/mineserver-manager/minecraft/model"
 	"github.com/eldius/mineserver-manager/minecraft/mojang"
 	"github.com/eldius/mineserver-manager/utils"
 	"gopkg.in/yaml.v3"
@@ -18,7 +19,7 @@ const (
 type ServerSoftware string
 
 type InstanceOpts struct {
-	SrvProps           *ServerProperties
+	SrvProps           *model.ServerProperties
 	VersionInfo        *mojang.VersionInfoResponse
 	Dest               string
 	VersionName        string

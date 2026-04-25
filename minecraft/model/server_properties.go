@@ -1,4 +1,4 @@
-package config
+package model
 
 import (
 	"fmt"
@@ -51,6 +51,10 @@ type GameMode string
 
 // LevelType is the level type configuration
 type LevelType string
+
+type Eula struct {
+	Eula bool `properties:"eula"`
+}
 
 // ServerConfig is configuration function to help setting up server
 type ServerConfig func(s *ServerProperties) *ServerProperties
@@ -566,82 +570,55 @@ type ServerProperties struct {
 	WhiteList bool `properties:"white-list" json:"white_list,omitempty" yaml:"white_list"`
 }
 
-func WithMotd(m string) ServerConfig {
-	return func(s *ServerProperties) *ServerProperties {
-		s.Motd = m
-		return s
-	}
+func (s *ServerProperties) WithMotd(m string) *ServerProperties {
+	s.Motd = m
+	return s
 }
 
-func WithLevelName(n string) ServerConfig {
-	return func(s *ServerProperties) *ServerProperties {
-		s.LevelName = n
-		return s
-	}
+func (s *ServerProperties) WithLevelName(n string) *ServerProperties {
+	s.LevelName = n
+	return s
 }
 
-func WithServerPort(p int) ServerConfig {
-	return func(s *ServerProperties) *ServerProperties {
-		s.ServerPort = p
-		return s
-	}
+func (s *ServerProperties) WithServerPort(p int) *ServerProperties {
+	s.ServerPort = p
+	return s
 }
 
 // WithRconEnabled enables RCON protocol configuration
 // 'port' to be used for this protocol
 // 'pass' define the RCON password
-func WithRconEnabled(port int, pass string) ServerConfig {
-	return func(s *ServerProperties) *ServerProperties {
-		s.RconPort = port
-		s.EnableRcon = true
-		s.RconPassword = pass
-		return s
-	}
+func (s *ServerProperties) WithRconEnabled(port int, pass string) *ServerProperties {
+	s.RconPort = port
+	s.EnableRcon = true
+	s.RconPassword = pass
+	return s
 }
 
 // WithRcon defines RCON protocol configuration
 // 'port' to be used for this protocol
 // 'enabled' is to enable/disable feature
 // 'pass' define the RCON password
-func WithRcon(port int, enabled bool, pass string) ServerConfig {
-	return func(s *ServerProperties) *ServerProperties {
-		s.RconPort = port
-		s.EnableRcon = enabled
-		s.RconPassword = pass
-		return s
-	}
+func (s *ServerProperties) WithRcon(port int, enabled bool, pass string) *ServerProperties {
+	s.RconPort = port
+	s.EnableRcon = enabled
+	s.RconPassword = pass
+	return s
 }
 
 // WithQuery defines Query protocol configuration
 // 'port' to be used for this protocol
 // 'enabled' is to enable/disable feature
-func WithQuery(port int, enabled bool) ServerConfig {
-	return func(s *ServerProperties) *ServerProperties {
-		s.QueryPort = port
-		s.EnableQuery = enabled
-		return s
-	}
+func (s *ServerProperties) WithQuery(port int, enabled bool) *ServerProperties {
+	s.QueryPort = port
+	s.EnableQuery = enabled
+	return s
 }
 
 // WithSeed defines level seed
-func WithSeed(seed string) ServerConfig {
-	return func(s *ServerProperties) *ServerProperties {
-		s.LevelSeed = seed
-		return s
-	}
-}
-
-// GetServerProperties returns a customized server.properties representation
-func GetServerProperties(cfgs ...ServerConfig) (*ServerProperties, error) {
-	resp, err := DefaultServerProperties()
-	if err != nil {
-		err = fmt.Errorf("loading default values: %w", err)
-		return resp, err
-	}
-	for _, c := range cfgs {
-		resp = c(resp)
-	}
-	return resp, nil
+func (s *ServerProperties) WithSeed(seed string) *ServerProperties {
+	s.LevelSeed = seed
+	return s
 }
 
 func LoadFromFile(path string) (*ServerProperties, error) {

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/asdine/storm/v3"
 	cfg "github.com/eldius/mineserver-manager/internal/config"
-	"github.com/eldius/mineserver-manager/minecraft/config"
 	"github.com/google/uuid"
 	"time"
 )
@@ -17,7 +16,7 @@ type Instance struct {
 	Path string `storm:"unique"`
 
 	InstallDate      time.Time
-	ServerProperties config.ServerProperties
+	ServerProperties ServerProperties
 }
 
 type RemoteInstance struct {
@@ -27,7 +26,7 @@ type RemoteInstance struct {
 	User string `storm:"index"`
 }
 
-func NewInstance(name, path string, serverProperties config.ServerProperties) *Instance {
+func NewInstance(name, path string, serverProperties ServerProperties) *Instance {
 	return &Instance{
 		ID:               uuid.New().String(),
 		Name:             name,

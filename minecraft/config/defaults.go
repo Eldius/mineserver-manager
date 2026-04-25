@@ -3,6 +3,7 @@ package config
 import (
 	"embed"
 	"fmt"
+	"github.com/eldius/mineserver-manager/minecraft/model"
 	"github.com/eldius/properties"
 	"io/fs"
 )
@@ -11,7 +12,7 @@ var (
 	//go:embed all:default_values
 	defaultConfigFiles embed.FS
 	// DefaultEulaValue default eula.txt content
-	DefaultEulaValue = &Eula{Eula: true}
+	DefaultEulaValue = &model.Eula{Eula: true}
 )
 
 func GetDefaultConfigFile(f string) (fs.File, error) {
@@ -19,8 +20,8 @@ func GetDefaultConfigFile(f string) (fs.File, error) {
 }
 
 // DefaultServerProperties returns the default server.properties representation
-func DefaultServerProperties() (*ServerProperties, error) {
-	var resp ServerProperties
+func DefaultServerProperties() (*model.ServerProperties, error) {
+	var resp model.ServerProperties
 	in, err := GetDefaultConfigFile("default_values/server.properties")
 	if err != nil {
 		err = fmt.Errorf("reading default server.properties values: %w", err)

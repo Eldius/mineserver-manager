@@ -11,6 +11,7 @@ import (
 	"github.com/eldius/mineserver-manager/minecraft/config"
 	"github.com/eldius/mineserver-manager/minecraft/model"
 	"github.com/eldius/mineserver-manager/minecraft/mojang"
+	"github.com/eldius/mineserver-manager/minecraft/provisioner"
 	"github.com/eldius/mineserver-manager/utils"
 	"github.com/eldius/properties"
 	"os"
@@ -241,7 +242,7 @@ func (i *vanillaInstaller) CreateServerProperties(cfg *config.InstanceOpts) erro
 // CreateStartScript generates the start script
 func (i *vanillaInstaller) CreateStartScript(cfg *config.InstanceOpts) error {
 
-	destFile := filepath.Join(cfg.AbsoluteDestPath(), config.StartScriptFileName)
+	destFile := filepath.Join(cfg.AbsoluteDestPath(), provisioner.StartScriptFileName)
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -249,12 +250,12 @@ func (i *vanillaInstaller) CreateStartScript(cfg *config.InstanceOpts) error {
 		return err
 	}
 
-	script, err := config.StartScript(
-		config.WithHeadless(cfg.Headless),
-		config.WithJDKPath("${INSTALL_PATH}/java/jdk/bin"),
-		config.WithMemLimit(cfg.MemoryOpt),
-		config.WithServerFile("server.jar"),
-		config.WithLogConfigFile(cfg.AddLogConfig),
+	script, err := provisioner.StartScript(
+		provisioner.WithHeadless(cfg.Headless),
+		provisioner.WithJDKPath("${INSTALL_PATH}/java/jdk/bin"),
+		provisioner.WithMemLimit(cfg.MemoryOpt),
+		provisioner.WithServerFile("server.jar"),
+		provisioner.WithLogConfigFile(cfg.AddLogConfig),
 	)
 	if err != nil {
 		err = fmt.Errorf("creating server startup script: %w", err)
@@ -270,7 +271,7 @@ func (i *vanillaInstaller) CreateStartScript(cfg *config.InstanceOpts) error {
 
 // CreateStopScript generates the stop server script
 func (i *vanillaInstaller) CreateStopScript(dest string) error {
-	destFile := filepath.Join(dest, config.StopScriptFileName)
+	destFile := filepath.Join(dest, provisioner.StopScriptFileName)
 
 	f, err := os.OpenFile(destFile, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, os.ModePerm)
 	if err != nil {
@@ -278,7 +279,7 @@ func (i *vanillaInstaller) CreateStopScript(dest string) error {
 		return err
 	}
 
-	scp, err := config.StopScript()
+	scp, err := provisioner.StopScript()
 	if err != nil {
 		err = fmt.Errorf("generating stop script content: %w", err)
 		return err
@@ -299,7 +300,7 @@ func (i *vanillaInstaller) CreateLoggingConfig(dest string) error {
 		return err
 	}
 
-	logf, err := config.LoggingConfiguration(dest)
+	logf, err := provisioner.LoggingConfiguration(dest)
 	if err != nil {
 		err = fmt.Errorf("generating logging configuration file content: %w", err)
 		return err
