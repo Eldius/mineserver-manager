@@ -3,7 +3,7 @@ package installer
 import (
 	"context"
 	"fmt"
-	"github.com/eldius/mineserver-manager/java"
+	"github.com/eldius/mineserver-manager/internal/java"
 	"time"
 )
 

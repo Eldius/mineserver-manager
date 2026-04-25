@@ -3,8 +3,8 @@ package installer
 import (
 	"context"
 	"fmt"
-	"github.com/eldius/mineserver-manager/minecraft/model"
-	"github.com/eldius/mineserver-manager/minecraft/mojang"
+	"github.com/eldius/mineserver-manager/internal/model"
+	"github.com/eldius/mineserver-manager/internal/mojang"
 )
 
 type vanillaFlavor struct {

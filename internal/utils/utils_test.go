@@ -34,7 +34,7 @@ func TestDownloadFile(t *testing.T) {
 	gock.New("https://piston-data.mojang.com").
 		Get("/v1/objects/15c777e2cfe0556eef19aab534b186c0c6f277e1/server.jar").
 		Reply(200).
-		File("../minecraft/mojang/samples/server.zip")
+		File("../mojang/samples/server.zip")
 
 	outDir, err := os.MkdirTemp(os.TempDir(), "mineserver-testing-*")
 	assert.NoError(t, err)
@@ -49,12 +49,12 @@ func TestDownloadFile(t *testing.T) {
 
 func TestValidateFileIntegrity(t *testing.T) {
 	t.Run("given a valid file hash should return success", func(t *testing.T) {
-		file := "../minecraft/mojang/samples/server.zip"
+		file := "../mojang/samples/server.zip"
 		assert.NoError(t, ValidateFileIntegrity(context.Background(), file, "fe5c3e7c6983ac7ea8a23bd9f2d8b235128633e8"))
 	})
 
 	t.Run("given a valid file hash should return error", func(t *testing.T) {
-		file := "../minecraft/mojang/samples/server.zip"
+		file := "../mojang/samples/server.zip"
 		assert.Error(t, ValidateFileIntegrity(context.Background(), file, "fe5c3e7c6983ac7ea8a23bd9f2d8b2351286abcd"))
 	})
 }

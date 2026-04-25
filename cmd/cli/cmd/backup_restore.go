@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"errors"
-	"github.com/eldius/mineserver-manager/minecraft"
+	"github.com/eldius/mineserver-manager/internal/minecraft"
 
 	"github.com/spf13/cobra"
 )

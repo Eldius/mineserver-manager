@@ -2,7 +2,7 @@ package installer
 
 import (
 	"context"
-	"github.com/eldius/mineserver-manager/minecraft/model"
+	"github.com/eldius/mineserver-manager/internal/model"
 )
 
 type ServerFlavor interface {

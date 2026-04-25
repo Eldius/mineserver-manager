@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"embed"
 	"fmt"
-	"github.com/eldius/mineserver-manager/minecraft/model"
+	"github.com/eldius/mineserver-manager/internal/model"
 	"github.com/eldius/properties"
 	"io"
 	"io/fs"

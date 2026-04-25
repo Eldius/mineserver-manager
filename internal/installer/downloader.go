@@ -3,7 +3,7 @@ package installer
 import (
 	"context"
 	"fmt"
-	"github.com/eldius/mineserver-manager/utils"
+	"github.com/eldius/mineserver-manager/internal/utils"
 	"path/filepath"
 	"time"
 )

@@ -2,9 +2,9 @@ package config
 
 import (
 	"bytes"
-	"github.com/eldius/mineserver-manager/minecraft/model"
-	"github.com/eldius/mineserver-manager/minecraft/mojang"
-	"github.com/eldius/mineserver-manager/utils"
+	"github.com/eldius/mineserver-manager/internal/model"
+	"github.com/eldius/mineserver-manager/internal/mojang"
+	"github.com/eldius/mineserver-manager/internal/utils"
 	"gopkg.in/yaml.v3"
 	"path/filepath"
 	"strings"
