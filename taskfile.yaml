@@ -22,5 +22,4 @@ tasks:
     cmds:
       - task: test
       - task: vulncheck
-      - task: ling
-
+      - task: lint
