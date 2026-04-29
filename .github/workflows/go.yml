@@ -12,11 +12,9 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: 1.26.2
-      - name: lint
-        uses: golangci/golangci-lint-action@v9
-      - name: Test
-        run: go test ./... -cover
-      - name: vulncheck
-        uses: golang/govulncheck-action@v1
-        with:
-           go-package: ./...
+      - name: Setup dependencies
+        run: |
+          go mod tidy
+          curl -sSfL https://golangci-lint.run/install.sh | sh -s
+      - name: validate
+        run: go tool task validate
