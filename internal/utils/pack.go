@@ -121,7 +121,7 @@ func pack(_ context.Context, src, dest string) error {
 			err = fmt.Errorf("writing file to zip (%s): %w", path, err)
 			return err
 		}
-		hashes.WriteString(fmt.Sprintf("%s  %s\n", fileName, shaHash(b)))
+		_, _ = fmt.Fprintf(&hashes, "%s  %s\n", fileName, shaHash(b))
 
 		return nil
 	}); err != nil {
