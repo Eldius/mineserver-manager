@@ -1,4 +1,8 @@
 
+ifeq ($(VERSION),)
+     VERSION:=$(shell git describe --tags --abbrev=0 | awk -F .   '{OFS="."; $$NF+=1; print}')
+endif
+
 TEST_SERVER ?= 192.168.0.185
 
 
@@ -90,3 +94,21 @@ restore-remote:
 
 get-remote-backups: .tmp
 	sftp $(USER)@$(TEST_SERVER):/mineservers/backup/test-server-backup_*_backup.zip* .tmp/
+
+
+release: test lint vulncheck
+	@echo ""
+	@echo "##############################"
+	@echo "# Generating next version... #"
+	@echo "##############################"
+	@echo ""
+	@echo "Next version: $(VERSION)"
+	@echo ""
+	@echo ""
+
+	git tag $(VERSION)
+	git push
+	git push --tags
+	@echo "------------------------------"
+	@echo ""
+

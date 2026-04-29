@@ -38,3 +38,13 @@ tasks:
     dir: '{{.USER_WORKING_DIR}}'
     cmds:
       - go tool goreleaser release --snapshot --clean
+
+  release-tag:
+    dir: '{{.USER_WORKING_DIR}}'
+    vars:
+      NEXT_VERSION:
+        sh: git describe --tags --abbrev=0 | awk -F .   '{OFS="."; $NF+=1; print}'
+    cmds:
+      - git tag {{.NEXT_VERSION}}
+      - git push
+      - git push --tags
