@@ -15,6 +15,6 @@ jobs:
       - name: Setup dependencies
         run: |
           go mod tidy
-          curl -sSfL https://golangci-lint.run/install.sh | sh -s
+          curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin
       - name: validate
         run: go tool task validate

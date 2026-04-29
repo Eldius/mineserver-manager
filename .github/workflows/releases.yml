@@ -23,7 +23,7 @@ jobs:
       - name: Setup dependencies
         run: |
           go mod tidy
-          curl -sSfL https://golangci-lint.run/install.sh | sh -s
+          curl -sSfL https://golangci-lint.run/install.sh | sh -s -- -b $(go env GOPATH)/bin
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
         with:
