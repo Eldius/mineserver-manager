@@ -20,6 +20,10 @@ jobs:
         uses: actions/setup-go@v6
         with:
           go-version: 1.26.2
+      - name: Setup dependencies
+        run: |
+          go mod tidy
+          curl -sSfL https://golangci-lint.run/install.sh | sh -s
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v7
         with:
