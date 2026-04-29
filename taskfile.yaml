@@ -23,3 +23,18 @@ tasks:
       - task: test
       - task: vulncheck
       - task: lint
+
+  release:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - go tool goreleaser release --clean --skip=publish
+
+  release-publish:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - go tool goreleaser release --clean
+
+  snapshot:
+    dir: '{{.USER_WORKING_DIR}}'
+    cmds:
+      - go tool goreleaser release --snapshot --clean
