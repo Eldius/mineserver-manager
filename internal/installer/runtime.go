@@ -24,7 +24,7 @@ func NewRuntimeManager(timeout time.Duration) RuntimeManager {
 func (m *microsoftRuntimeManager) InstallJava(ctx context.Context, dest string, version int, arch, osName string) (string, error) {
 	path, err := java.Install(ctx, dest, version, arch, osName, m.timeout)
 	if err != nil {
-		return "", fmt.Errorf("installing java: %w", err)
+		return "", fmt.Errorf("%w: %v", ErrJavaInstallFailed, err)
 	}
 	return path, nil
 }

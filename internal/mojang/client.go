@@ -47,14 +47,20 @@ func (c *apiClient) ListVersions(ctx context.Context) (*VersionsResponse, error)
 	client := c.httpClient()
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, VersionsURL, nil)
 	if err != nil {
-		err = fmt.Errorf("creating mojang query request instance: %w", err)
-		return nil, err
+		return nil, &APIError{
+			URL:  VersionsURL,
+			Verb: http.MethodGet,
+			Err:  fmt.Errorf("creating mojang query request instance: %w", err),
+		}
 	}
 	//res, err := mojang.Get(VersionsURL)
 	res, err := client.Do(r)
 	if err != nil {
-		err = fmt.Errorf("getting available mojang: %w", err)
-		return nil, err
+		return nil, &APIError{
+			URL:  VersionsURL,
+			Verb: http.MethodGet,
+			Err:  fmt.Errorf("getting available mojang: %w", err),
+		}
 	}
 	defer func() {
 		_ = res.Body.Close()
@@ -62,8 +68,11 @@ func (c *apiClient) ListVersions(ctx context.Context) (*VersionsResponse, error)
 
 	var versions VersionsResponse
 	if err = json.NewDecoder(res.Body).Decode(&versions); err != nil {
-		err = fmt.Errorf("decoding available mojang response: %w", err)
-		return nil, err
+		return nil, &APIError{
+			URL:  VersionsURL,
+			Verb: http.MethodGet,
+			Err:  fmt.Errorf("%w: %v", ErrDecodeFailed, err),
+		}
 	}
 
 	return &versions, nil
@@ -74,13 +83,19 @@ func (c *apiClient) GetVersionInfo(ctx context.Context, v Version) (*VersionInfo
 	client := c.httpClient()
 	r, err := http.NewRequestWithContext(ctx, http.MethodGet, v.URL, nil)
 	if err != nil {
-		err = fmt.Errorf("getting version info for '%s': %w", v.ID, err)
-		return nil, err
+		return nil, &APIError{
+			URL:  v.URL,
+			Verb: http.MethodGet,
+			Err:  fmt.Errorf("getting version info for '%s': %w", v.ID, err),
+		}
 	}
 	res, err := client.Do(r)
 	if err != nil {
-		err = fmt.Errorf("getting version info: %w", err)
-		return nil, err
+		return nil, &APIError{
+			URL:  v.URL,
+			Verb: http.MethodGet,
+			Err:  fmt.Errorf("getting version info: %w", err),
+		}
 	}
 	defer func() {
 		_ = res.Body.Close()
@@ -88,8 +103,11 @@ func (c *apiClient) GetVersionInfo(ctx context.Context, v Version) (*VersionInfo
 
 	var version VersionInfoResponse
 	if err = json.NewDecoder(res.Body).Decode(&version); err != nil {
-		err = fmt.Errorf("decoding version info response: %w", err)
-		return nil, err
+		return nil, &APIError{
+			URL:  v.URL,
+			Verb: http.MethodGet,
+			Err:  fmt.Errorf("%w: %v", ErrDecodeFailed, err),
+		}
 	}
 
 	return &version, nil
@@ -98,15 +116,17 @@ func (c *apiClient) GetVersionInfo(ctx context.Context, v Version) (*VersionInfo
 func (c *apiClient) GetUsersInfo(users ...string) (UserIDResponse, error) {
 	b, err := json.Marshal(users)
 	if err != nil {
-		err = fmt.Errorf("marshalling users info: %w", err)
-		return nil, err
+		return nil, fmt.Errorf("marshalling users info: %w", err)
 	}
 	client := c.httpClient()
 	buff := bytes.NewBuffer(b)
 	res, err := client.Post(UsersInfoBulkURL, "application/json", buff)
 	if err != nil {
-		err = fmt.Errorf("getting users info: %w", err)
-		return nil, err
+		return nil, &APIError{
+			URL:  UsersInfoBulkURL,
+			Verb: http.MethodPost,
+			Err:  fmt.Errorf("getting users info: %w", err),
+		}
 	}
 	defer func() {
 		_ = res.Body.Close()
@@ -114,8 +134,11 @@ func (c *apiClient) GetUsersInfo(users ...string) (UserIDResponse, error) {
 
 	var response UserIDResponse
 	if err := json.NewDecoder(res.Body).Decode(&response); err != nil {
-		err = fmt.Errorf("decoding users info response: %w", err)
-		return nil, err
+		return nil, &APIError{
+			URL:  UsersInfoBulkURL,
+			Verb: http.MethodPost,
+			Err:  fmt.Errorf("%w: %v", ErrDecodeFailed, err),
+		}
 	}
 
 	return response, nil

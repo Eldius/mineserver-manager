@@ -26,6 +26,7 @@ var (
 	ErrChecksumValidationFailed = errors.New("file sign validation error")
 	ErrCouldNotOpenFile         = errors.New("opening source file")
 	ErrCouldNotReadFile         = errors.New("reading source file content")
+	ErrDownloadFailed           = errors.New("download failed")
 )
 
 // GetFileName returns file name from URL
@@ -71,7 +72,7 @@ func DownloadFile(ctx context.Context, timeout time.Duration, u, destFile string
 	}
 
 	if res.StatusCode/100 != 2 {
-		return fmt.Errorf("status code not success (was %d)", res.StatusCode)
+		return fmt.Errorf("%w: status code was %d", ErrDownloadFailed, res.StatusCode)
 	}
 
 	return nil

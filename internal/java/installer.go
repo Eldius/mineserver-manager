@@ -50,7 +50,19 @@ var (
 
 // Download downloads JVM package
 func Download(ctx context.Context, v int, arch, osName string, timeout time.Duration) (string, error) {
-	u := PackageVersions[v][osName][arch]
+	vMap, ok := PackageVersions[v]
+	if !ok {
+		return "", fmt.Errorf("%w: %d", ErrVersionNotSupported, v)
+	}
+	osMap, ok := vMap[osName]
+	if !ok {
+		return "", fmt.Errorf("%w: %s", ErrPlatformNotSupported, osName)
+	}
+	u, ok := osMap[arch]
+	if !ok {
+		return "", fmt.Errorf("%w: %s", ErrPlatformNotSupported, arch)
+	}
+
 	tempDir, err := os.MkdirTemp(os.TempDir(), "mine-installer-*")
 	if err != nil {
 		err = fmt.Errorf("creating temp folder to save java runtime (osName: %s/arch: %s/v: %d): %w", osName, arch, v, err)

@@ -25,11 +25,19 @@ func NewDownloader(timeout time.Duration) Downloader {
 func (d *vanillaDownloader) DownloadServer(ctx context.Context, url, sha1, dest string) (string, error) {
 	destFile := filepath.Join(dest, utils.GetFileName(url))
 	if err := utils.DownloadFile(ctx, d.timeout, url, destFile); err != nil {
-		return "", fmt.Errorf("downloading server file: %w", err)
+		return "", &DownloadError{
+			URL:  url,
+			Dest: destFile,
+			Err:  fmt.Errorf("downloading server file: %w", err),
+		}
 	}
 
 	if err := utils.ValidateFileIntegrity(ctx, destFile, sha1); err != nil {
-		return "", err
+		return "", &DownloadError{
+			URL:  url,
+			Dest: destFile,
+			Err:  fmt.Errorf("validating server file integrity: %w", err),
+		}
 	}
 
 	return destFile, nil

@@ -93,13 +93,19 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 // Install installs selected version
 func (i *vanillaInstaller) Install(ctx context.Context, configs ...config.InstanceOpt) error {
 	opts := config.NewInstanceOpts(configs...)
+	instanceName := filepath.Base(opts.AbsoluteDestPath())
 
 	log := logger.GetLogger().With("action", "install_server", "version_name", opts.VersionName)
 
 	if err := os.MkdirAll(opts.AbsoluteDestPath(), os.ModePerm); err != nil {
 		if !errors.Is(err, os.ErrExist) {
-			err = fmt.Errorf("creating destination folder: %w", err)
+			err = &InstallError{
+				InstanceName: instanceName,
+				Operation:    "creating destination folder",
+				Err:          err,
+			}
 			log.With("error", err).ErrorContext(ctx, "Failed to create destination folder")
+			return err
 		}
 		log.Debug("destination already exists")
 	}
@@ -108,22 +114,38 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...config.Instan
 
 	info, err := i.f.GetVersionInfo(ctx, opts.VersionName)
 	if err != nil {
-		return fmt.Errorf("getting version info for %s: %w", opts.VersionName, err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "getting version info",
+			Err:          fmt.Errorf("getting version info for %s: %w", opts.VersionName, err),
+		}
 	}
 
 	if err := i.p.CreateServerProperties(opts.AbsoluteDestPath(), opts.SrvProps); err != nil {
-		return fmt.Errorf("creating server properties file: %w", err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "creating server properties",
+			Err:          err,
+		}
 	}
 
 	sf, err := i.d.DownloadServer(ctx, info.DownloadURL, info.SHA1, opts.AbsoluteDestPath())
 	if err != nil {
-		return fmt.Errorf("downloading server file: %w", err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "downloading server file",
+			Err:          err,
+		}
 	}
 
 	log.With("server_file", sf).DebugContext(ctx, "Dowloaded server file")
 
 	if _, err := i.r.InstallJava(ctx, filepath.Join(opts.AbsoluteDestPath(), "java"), info.JavaVersion, runtime.GOARCH, runtime.GOOS); err != nil {
-		return fmt.Errorf("installing jdk: %w", err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "installing java runtime",
+			Err:          err,
+		}
 	}
 
 	if err := i.p.CreateStartScript(opts.AbsoluteDestPath(),
@@ -133,32 +155,56 @@ func (i *vanillaInstaller) Install(ctx context.Context, configs ...config.Instan
 		provisioner.WithServerFile("server.jar"),
 		provisioner.WithLogConfigFile(opts.AddLogConfig),
 	); err != nil {
-		return fmt.Errorf("creating start script: %w", err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "creating start script",
+			Err:          err,
+		}
 	}
 
 	if err := i.p.CreateStopScript(opts.AbsoluteDestPath()); err != nil {
-		return fmt.Errorf("creating stop script: %w", err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "creating stop script",
+			Err:          err,
+		}
 	}
 
 	if opts.AddLogConfig {
 		if err := i.p.CreateLoggingConfig(opts.AbsoluteDestPath(), opts.AbsoluteDestPath()); err != nil {
-			return fmt.Errorf("generating log config file: %w", err)
+			return &InstallError{
+				InstanceName: instanceName,
+				Operation:    "generating log config file",
+				Err:          err,
+			}
 		}
 	}
 
 	if err := i.p.CreateEula(opts.AbsoluteDestPath(), config.DefaultEulaValue); err != nil {
-		return fmt.Errorf("creating eula.txt file: %w", err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "creating eula.txt",
+			Err:          err,
+		}
 	}
 
 	if err := i.createVersionFile(ctx, opts.AbsoluteDestPath(), *opts, info); err != nil {
-		return fmt.Errorf("creating version file: %w", err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "creating version file",
+			Err:          err,
+		}
 	}
 
 	// Whitelist requires mojang API specifically for UUID lookups
 	// For now we only support it for vanilla if the flavor provides a client or we keep using mojang client directly.
 	// Purpur might support it too if they use same UUIDs.
 	if err := i.createWhitelistFile(ctx, *opts); err != nil {
-		return fmt.Errorf("creating whitelist file: %w", err)
+		return &InstallError{
+			InstanceName: instanceName,
+			Operation:    "creating whitelist",
+			Err:          err,
+		}
 	}
 
 	if i.repo != nil {

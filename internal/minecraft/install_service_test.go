@@ -167,4 +167,48 @@ func TestInstaller_Install(t *testing.T) {
 		mf.AssertExpectations(t)
 		mrepo.AssertExpectations(t)
 	})
+
+	t.Run("should return InstallError when download fails", func(t *testing.T) {
+		ctx := context.Background()
+		dest, _ := os.MkdirTemp(os.TempDir(), "mine-install-test-*")
+		defer func() {
+			_ = os.RemoveAll(dest)
+		}()
+
+		md := new(mockDownloader)
+		mr := new(mockRuntimeManager)
+		mp := new(mockProvisioner)
+		mf := new(mockFlavor)
+		mrepo := new(mockRepository)
+
+		info := &installer.FlavorVersionInfo{
+			Version:     "1.20",
+			DownloadURL: "https://example.com/server.jar",
+			SHA1:        "abc",
+			JavaVersion: 17,
+		}
+
+		mf.On("GetVersionInfo", mock.Anything, "1.20").Return(info, nil)
+		md.On("DownloadServer", mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return("", fmt.Errorf("network error"))
+		mp.On("CreateServerProperties", mock.Anything, mock.Anything).Return(nil)
+
+		s := NewInstallService(
+			WithDownloader(md),
+			WithRuntimeManager(mr),
+			WithProvisioner(mp),
+			WithFlavor(mf),
+			WithRepository(mrepo),
+		)
+
+		err := s.Install(ctx,
+			config.WithVersion("1.20"),
+			config.ToDestinationFolder(dest),
+		)
+
+		assert.NotNil(t, err)
+		var installErr *InstallError
+		assert.ErrorAs(t, err, &installErr)
+		assert.Equal(t, "downloading server file", installErr.Operation)
+		md.AssertExpectations(t)
+	})
 }

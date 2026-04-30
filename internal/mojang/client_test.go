@@ -76,7 +76,7 @@ func TestListVersions(t *testing.T) {
 		assert.Equal(t, 17, info.JavaVersion.MajorVersion)
 	})
 
-	t.Run("given an specific version should return its info", func(t *testing.T) {
+	t.Run("given an specific version should return its info and handle timeout with APIError", func(t *testing.T) {
 		defer gock.Off() // Flush pending mocks after test execution
 
 		gock.New("https://launchermeta.mojang.com").
@@ -87,10 +87,14 @@ func TestListVersions(t *testing.T) {
 
 		ctx := context.Background()
 
-		c := NewClient(WithTimeout(1 * time.Second))
+		c := NewClient(WithTimeout(10 * time.Millisecond))
 
 		v, err := c.ListVersions(ctx)
 		assert.NotNil(t, err)
 		assert.Nil(t, v)
+
+		var apiErr *APIError
+		assert.ErrorAs(t, err, &apiErr)
+		assert.Equal(t, VersionsURL, apiErr.URL)
 	})
 }

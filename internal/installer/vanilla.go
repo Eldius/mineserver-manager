@@ -40,7 +40,7 @@ func (f *vanillaFlavor) GetVersionInfo(ctx context.Context, version string) (*Fl
 	}
 	v, err := ver.GetVersion(version)
 	if err != nil {
-		return nil, fmt.Errorf("finding version %s: %w", version, err)
+		return nil, fmt.Errorf("%w: %s (%v)", ErrVersionNotFound, version, err)
 	}
 	info, err := f.client.GetVersionInfo(ctx, *v)
 	if err != nil {

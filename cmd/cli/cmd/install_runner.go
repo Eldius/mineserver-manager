@@ -50,6 +50,14 @@ func runInstall(ctx context.Context, opts installCmdOpts) error {
 	)
 
 	if err := client.Install(ctx, instanceOpts...); err != nil {
+		var installErr *minecraft.InstallError
+		if errors.As(err, &installErr) {
+			return fmt.Errorf("failed to install %s during %s: %w", installErr.InstanceName, installErr.Operation, installErr.Err)
+		}
+		var downloadErr *installer.DownloadError
+		if errors.As(err, &downloadErr) {
+			return fmt.Errorf("failed to download from %s: %w", downloadErr.URL, downloadErr.Err)
+		}
 		return fmt.Errorf("installing server: %w", err)
 	}
 
