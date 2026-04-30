@@ -376,8 +376,8 @@ github.com/ebitengine/purego v0.10.0 h1:QIw4xfpWT6GWTzaW5XEKy3HXoqrJGx1ijYHzTF0/
 github.com/ebitengine/purego v0.10.0/go.mod h1:iIjxzd6CiRiOG0UyXP+V1+jWqUXVjPKLAI0mRfJZTmQ=
 github.com/elazarl/goproxy v1.7.2 h1:Y2o6urb7Eule09PjlhQRGNsqRfPmYI3KKQLFpCAV3+o=
 github.com/elazarl/goproxy v1.7.2/go.mod h1:82vkLNir0ALaW14Rc399OTTjyNREgmdL2cVoIbS6XaE=
-github.com/eldius/initial-config-go v0.0.44 h1:wyxr3uhRqS46GK9W4IgxnJje1VP5jyu6SXqb+/N5p/8=
-github.com/eldius/initial-config-go v0.0.44/go.mod h1:FJgxQu0Rsi0cQZHDuVqPYob3BXOxDv3p0Buh5GD/5cU=
+github.com/eldius/initial-config-go v0.0.46 h1:jfG+09RfvUoxHbXv/Qa1zwqnT9P8EawqMrmxw2KBt3o=
+github.com/eldius/initial-config-go v0.0.46/go.mod h1:FJgxQu0Rsi0cQZHDuVqPYob3BXOxDv3p0Buh5GD/5cU=
 github.com/eldius/properties v0.0.4 h1:LunQB9w/uuZH+kVbKrLFlxvSF6U8olBOXaC1eMjd9Bo=
 github.com/eldius/properties v0.0.4/go.mod h1:uHzBW6ssxyjp1lUZzTFdU8o1CyA6qL9JGRMND8VamOQ=
 github.com/elliotchance/orderedmap/v3 v3.1.0 h1:j4DJ5ObEmMBt/lcwIecKcoRxIQUEnw0L804lXYDt/pg=
