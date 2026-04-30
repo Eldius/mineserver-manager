@@ -31,3 +31,13 @@ mineserver \
       --memory-limit 2g \
       --whitelist-user Eldius
 ```
+
+```http request
+## get latest version files
+GET https://api.github.com/repos/eldius/mineserver-manager/releases/latest
+```
+
+```shell
+## download latest version by arch
+wget $( curl https://api.github.com/repos/eldius/mineserver-manager/releases/latest | jq -r '.assets[].browser_download_url' | grep <my-arch> )
+```
