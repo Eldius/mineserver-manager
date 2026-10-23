@@ -14,6 +14,7 @@ import (
 	"github.com/eldius/mineserver-manager/internal/provisioner"
 	"github.com/eldius/mineserver-manager/internal/repository"
 	"github.com/eldius/mineserver-manager/internal/httpx"
+	"github.com/eldius/mineserver-manager/internal/java"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -31,7 +32,7 @@ type InstallServiceConfig struct {
 	TargetFolder    string
 
 	Downloader     installer.Downloader
-	RuntimeManager installer.RuntimeManager
+	RuntimeManager java.RuntimeManager
 	Provisioner    provisioner.Provisioner
 	Flavor         installer.ServerFlavor
 	Repository     repository.Repository
@@ -46,7 +47,7 @@ type Installer interface {
 type vanillaInstaller struct {
 	cfg  InstallServiceConfig
 	d    installer.Downloader
-	r    installer.RuntimeManager
+	r    java.RuntimeManager
 	p    provisioner.Provisioner
 	f    installer.ServerFlavor
 	repo repository.Repository
@@ -65,7 +66,7 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 		svcCfg.Downloader = installer.NewDownloader(svcCfg.DownloadTimeout)
 	}
 	if svcCfg.RuntimeManager == nil {
-		svcCfg.RuntimeManager = installer.NewRuntimeManager(svcCfg.DownloadTimeout)
+		svcCfg.RuntimeManager = java.NewRuntimeManager(svcCfg.DownloadTimeout)
 	}
 	if svcCfg.Provisioner == nil {
 		svcCfg.Provisioner = provisioner.NewProvisioner()
@@ -286,7 +287,7 @@ func WithDownloader(d installer.Downloader) InstallServiceOpt {
 	}
 }
 
-func WithRuntimeManager(r installer.RuntimeManager) InstallServiceOpt {
+func WithRuntimeManager(r java.RuntimeManager) InstallServiceOpt {
 	return func(cfg *InstallServiceConfig) {
 		cfg.RuntimeManager = r
 	}

@@ -12,8 +12,6 @@ var (
 	ErrVersionNotFound = errors.New("version not found")
 	// ErrDownloadFailed is returned when a download operation fails
 	ErrDownloadFailed = errors.New("download failed")
-	// ErrJavaInstallFailed is returned when java installation fails
-	ErrJavaInstallFailed = errors.New("java installation failed")
 )
 
 // DownloadError provides context for download failures

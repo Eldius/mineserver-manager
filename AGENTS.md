@@ -22,7 +22,7 @@ Go CLI (`mineserver` binary) to install and manage Minecraft servers: version di
 - `cmd/cli/cmd` — Cobra commands, lean-command pattern: `install.go` defines flags, `install_runner.go` holds the logic (same for `backup*.go`). Keep new commands structured this way.
 - `internal/minecraft` — `InstallService` / `BackupService`, constructed with functional options.
 - `internal/installer` — `ServerFlavor` interface; only Vanilla implemented (`vanilla.go`). `--flavor purpur` passes flag parsing but errors "not yet implemented".
-- `internal/java` — JRE download/management per Minecraft version.
+- `internal/java` — JRE download/management per Minecraft version, including `RuntimeManager` (the JRE install port used by `InstallService`).
 - `internal/provisioner` — renders the instance filesystem; templates embedded with `//go:embed all:templates` (`start.sh`, `stop.sh`, `log4j2.xml`) under `internal/provisioner/templates`, rendered via `text/template`.
 - `internal/mojang` — Mojang API client.
 - `internal/repository` — Storm (BoltDB) persistence.
@@ -33,8 +33,8 @@ Go CLI (`mineserver` binary) to install and manage Minecraft servers: version di
 
 - Logging: `log/slog` via `internal/logger`.
 - Runtime config: `$HOME/.mineserver/config.yaml` (fallback `./config.yaml`), overridable with `--config`; defaults are registered in `cmd/cli/cmd/root.go`.
-- Tests: testify + `gock` for HTTP mocking (Mojang hosts `launchermeta`/`piston-meta`/`piston-data.mojang.com`); fixtures live in `internal/mojang/samples` and `internal/minecraft/test_samples`.
-- Trust `cmd/cli/cmd/*.go` over README for flags — the README install snippet uses a stale name (`--enable-rcon`; the real flag is `--rcon-enabled`).
+- Tests: testify + `gock` for HTTP mocking (Mojang hosts `launchermeta`/`piston-meta`/`piston-data.mojang.com`); fixtures live in `testdata/` dirs (`internal/mojang/testdata`, `internal/minecraft/testdata`, `internal/ssh/testdata`).
+- Flag definitions live in `cmd/cli/cmd/*.go` — check them there if CLI behavior is unclear.
 
 ## Release
 

@@ -7,4 +7,6 @@ var (
 	ErrVersionNotSupported = errors.New("java version not supported")
 	// ErrPlatformNotSupported is returned when a platform (OS/Arch) is not supported
 	ErrPlatformNotSupported = errors.New("platform not supported")
+	// ErrJavaInstallFailed is returned when java installation fails
+	ErrJavaInstallFailed = errors.New("java installation failed")
 )

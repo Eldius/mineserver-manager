@@ -15,12 +15,12 @@ func TestListVersions(t *testing.T) {
 		gock.New("https://launchermeta.mojang.com").
 			Get("/mc/game/version_manifest.json").
 			Reply(200).
-			File("./samples/versions.json")
+			File("./testdata/versions.json")
 
 		gock.New("https://piston-meta.mojang.com").
 			Get("/v1/packages/7efb232e2903bea16d7bf7b4a5ea768453cf92ea/1.20.json").
 			Reply(200).
-			File("./samples/1.20.json")
+			File("./testdata/1.20.json")
 
 		ctx := context.Background()
 
@@ -46,12 +46,12 @@ func TestListVersions(t *testing.T) {
 		gock.New("https://launchermeta.mojang.com").
 			Get("/mc/game/version_manifest.json").
 			Reply(200).
-			File("./samples/versions.json")
+			File("./testdata/versions.json")
 
 		gock.New("https://piston-meta.mojang.com").
 			Get("/v1/packages/7efb232e2903bea16d7bf7b4a5ea768453cf92ea/1.20.json").
 			Reply(200).
-			File("./samples/1.20.json")
+			File("./testdata/1.20.json")
 
 		ctx := context.Background()
 
@@ -83,7 +83,7 @@ func TestListVersions(t *testing.T) {
 			Get("/mc/game/version_manifest.json").
 			Reply(200).
 			Delay(5 * time.Second).
-			File("./samples/versions.json")
+			File("./testdata/versions.json")
 
 		ctx := context.Background()
 
