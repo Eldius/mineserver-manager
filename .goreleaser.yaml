@@ -30,10 +30,10 @@ builds:
       - -a
     ldflags:
       - -extldflags "-static"
-      - -X github.com/eldius/mineserver-manager/internal/config.BuildDate={{.Date}}
-      - -X github.com/eldius/mineserver-manager/internal/config.Version={{.Version}}
-      - -X github.com/eldius/mineserver-manager/internal/config.CommitDate={{.CommitDate}}
-      - -X github.com/eldius/mineserver-manager/internal/config.Commit={{.Commit}}
+      - -X github.com/eldius/mineserver-manager/internal/buildinfo.BuildDate={{.Date}}
+      - -X github.com/eldius/mineserver-manager/internal/buildinfo.Version={{.Version}}
+      - -X github.com/eldius/mineserver-manager/internal/buildinfo.CommitDate={{.CommitDate}}
+      - -X github.com/eldius/mineserver-manager/internal/buildinfo.Commit={{.Commit}}
     goarch:
       - amd64
       - arm

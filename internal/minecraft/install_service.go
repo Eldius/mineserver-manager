@@ -13,6 +13,7 @@ import (
 	"github.com/eldius/mineserver-manager/internal/mojang"
 	"github.com/eldius/mineserver-manager/internal/provisioner"
 	"github.com/eldius/mineserver-manager/internal/repository"
+	"github.com/eldius/mineserver-manager/internal/buildinfo"
 	"github.com/eldius/mineserver-manager/internal/httpx"
 	"github.com/eldius/mineserver-manager/internal/java"
 	"os"
@@ -73,12 +74,6 @@ func NewInstallService(configs ...InstallServiceOpt) Installer {
 	}
 	if svcCfg.Flavor == nil {
 		svcCfg.Flavor = installer.NewVanillaFlavor(mojang.NewClient(mojang.WithTimeout(svcCfg.Timeout)))
-	}
-	if svcCfg.Repository == nil {
-		repo, err := repository.NewStormRepository(cfg.GetAppHomePath())
-		if err == nil {
-			svcCfg.Repository = repo
-		}
 	}
 
 	return &vanillaInstaller{
@@ -255,7 +250,7 @@ func (i *vanillaInstaller) createVersionFile(_ context.Context, destFolder strin
 		_ = f.Close()
 	}()
 
-	verInfo := cfg.GetVersionInfo()
+	verInfo := buildinfo.GetVersionInfo()
 
 	return json.NewEncoder(f).Encode(&model.VersionsInfo{
 		JavaVersion: info.JavaVersion,

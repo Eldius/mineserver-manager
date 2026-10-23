@@ -9,6 +9,7 @@ import (
 	"github.com/eldius/mineserver-manager/internal/minecraft"
 	"github.com/eldius/mineserver-manager/internal/minecraft/config"
 	"github.com/eldius/mineserver-manager/internal/mojang"
+	"github.com/eldius/mineserver-manager/internal/repository"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"log/slog"
 )
@@ -35,11 +36,25 @@ func runInstall(ctx context.Context, opts installCmdOpts) error {
 		return nil
 	}
 
-	client := minecraft.NewInstallService(
+	svcOpts := []minecraft.InstallServiceOpt{
 		minecraft.WithTimeout(cfg.GetMinecraftApiTimeout()),
 		minecraft.WithDownloadTimeout(cfg.GetMinecraftDownloadTimeout()),
 		minecraft.WithFlavor(flavor),
-	)
+	}
+
+	repo, err := repository.NewStormRepository(cfg.GetAppHomePath())
+	if err != nil {
+		slog.With("error", err).Warn("failed to open instance repository; instance metadata will not be persisted")
+	} else {
+		defer func() {
+			if err := repo.Close(); err != nil {
+				slog.With("error", err).Warn("failed to close instance repository")
+			}
+		}()
+		svcOpts = append(svcOpts, minecraft.WithRepository(repo))
+	}
+
+	client := minecraft.NewInstallService(svcOpts...)
 
 	instanceOpts := append(
 		opts.ToInstanceOpts(),

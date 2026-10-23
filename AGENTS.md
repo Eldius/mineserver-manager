@@ -25,8 +25,9 @@ Go CLI (`mineserver` binary) to install and manage Minecraft servers: version di
 - `internal/java` — JRE download/management per Minecraft version, including `RuntimeManager` (the JRE install port used by `InstallService`).
 - `internal/provisioner` — renders the instance filesystem; templates embedded with `//go:embed all:templates` (`start.sh`, `stop.sh`, `log4j2.xml`) under `internal/provisioner/templates`, rendered via `text/template`.
 - `internal/mojang` — Mojang API client.
-- `internal/repository` — Storm (BoltDB) persistence.
-- `internal/config` — viper property keys plus version vars (`Version`, `Commit`, ...) injected by goreleaser ldflags; shown by `mineserver version`.
+- `internal/repository` — Storm (BoltDB) persistence. Constructed in the cmd layer and injected via `minecraft.WithRepository`; persistence is best-effort (install proceeds without it).
+- `internal/config` — viper property keys and runtime config getters.
+- `internal/buildinfo` — version vars (`Version`, `Commit`, ...) injected by goreleaser ldflags; shown by `mineserver version`.
 - `internal/httpx` / `internal/archive` / `internal/ssh` — HTTP download + checksum helpers, zip/tar.gz packing, SSH exec; split out of the old grab-bag `internal/utils`, which now keeps only small generic helpers (`Must`, `PasswordPrompt`, path helpers).
 
 ## Conventions
@@ -38,6 +39,6 @@ Go CLI (`mineserver` binary) to install and manage Minecraft servers: version di
 
 ## Release
 
-- Pushing a `v*` tag triggers goreleaser via `.github/workflows/releases.yml`; version info is injected by ldflags into `internal/config`.
+- Pushing a `v*` tag triggers goreleaser via `.github/workflows/releases.yml`; version info is injected by ldflags into `internal/buildinfo`.
 - Local snapshot: `go tool goreleaser release --snapshot --clean`. Note its before-hooks run `go mod tidy`, tests, govulncheck, and lint — all must pass (Docker needed for tests).
 - Builds are linux-only (amd64, arm64, armv6/7), `CGO_ENABLED=0`, static; binary name `mineserver`.

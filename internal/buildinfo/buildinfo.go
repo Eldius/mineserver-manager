@@ -1,4 +1,6 @@
-package config
+// Package buildinfo holds the build-time version metadata injected via
+// ldflags by goreleaser (see .goreleaser.yaml).
+package buildinfo
 
 import (
 	"os"
