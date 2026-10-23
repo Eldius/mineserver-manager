@@ -1,86 +1,44 @@
-# Gemini Context: mineserver-manager
+# AGENTS.md
 
-`mineserver-manager` is a Go-based CLI tool designed to automate the installation, configuration, and management of Minecraft server instances.
+Go CLI (`mineserver` binary) to install and manage Minecraft servers: version discovery, JRE provisioning, instance generation, backups. Module `github.com/eldius/mineserver-manager`; entrypoint `./cmd/cli`.
 
-## Project Overview
+## Commands
 
-- **Purpose**: Streamline Minecraft server management, including version discovery, installation, Java Runtime Environment (JRE) management, and backups.
+- Build: `go build -o mineserver ./cmd/cli`
+- Test: `go test ./...`
+- Lint: `golangci-lint run` (no config file — runs with defaults)
+- Vulncheck: `go tool govulncheck ./...`
+- Full CI check: `go tool task validate` (= test + vulncheck + lint; what `.github/workflows/go.yml` runs)
 
-## Detailed Design & Code Organization
+### Gotchas
 
-The project follows a clean architecture approach, prioritizing decoupling and testability through interfaces and dependency injection.
+- **`go test ./...` fails without Docker**: `internal/utils/ssh_test.go` uses testcontainers (pulls `lscr.io/linuxserver/openssh-server`). Without Docker: `go test $(go list ./... | grep -v /internal/utils)`. This also makes `task test` / `task validate` fail.
+- **Avoid `make test`**: it ends with `go tool cover -html=coverage.out`, which tries to open a browser. Use plain `go test`.
+- Dev tools are Go tool directives in `go.mod` — invoke via `go tool task`, `go tool goreleaser`, `go tool govulncheck`, `go tool dlv`, `go tool deadcode`. Exception: `golangci-lint` is expected at `$(go env GOPATH)/bin/golangci-lint` (the taskfile hardcodes that path; CI installs it via the golangci-lint.run curl script).
+- Requires Go 1.27.3 per `go.mod` (CI pins 1.26.2 and relies on toolchain auto-download).
+- `Makefile` targets `put`, `install-remote`, `backup-remote`, `restore-remote` are the maintainer's personal workflows against a hardcoded test host — not general dev commands. `make release` / `task release-tag` create and push git tags; don't run them casually.
 
-- **CLI Layer (`cmd/cli`)**: Built using [Cobra](https://github.com/spf13/cobra) and [Viper](https://github.com/spf13/viper). It follows a **Lean Command** pattern:
-  - Command files define flags and handle initial validation.
-  - Action execution is delegated to "Runner" functions or direct Service calls.
-- **Service Layer (`internal/minecraft/`)**: Orchestrates high-level domain operations.
-  - `InstallService`: Coordinates server fetching, JRE setup, and instance provisioning.
-  - `BackupService`: Manages instance archiving and rotation.
-- **Installer & Strategy Pattern (`internal/installer/`)**:
-  - `ServerFlavor` interface allows supporting multiple server types (Vanilla, Purpur, etc.) polymorphically.
-  - `RuntimeManager` handles the lifecycle of Java Runtimes, ensuring the correct JDK is available for the selected Minecraft version.
-- **Provisioner (`internal/provisioner/`)**:
-  - Responsible for generating the filesystem layout.
-  - Uses Go's `embed` package to bundle templates (`start.sh`, `stop.sh`, `log4j2.xml`).
-  - Employs `text/template` for rendering configuration files.
-- **Persistence (`internal/repository/`)**:
-  - Implements the **Repository Pattern** to abstract data access.
-  - Currently uses [Storm](https://github.com/asdine/storm) as a BoltDB-based embedded storage provider.
-- **Domain Model (`internal/model/`)**: Contains pure data structures, keeping them decoupled from persistence or external API concerns.
-- **External Clients (`internal/mojang/`)**: Specialized clients for interacting with third-party APIs (e.g., official Mojang metadata).
+## Architecture
 
-## Technologies & Strategy
+- `cmd/cli/cmd` — Cobra commands, lean-command pattern: `install.go` defines flags, `install_runner.go` holds the logic (same for `backup*.go`). Keep new commands structured this way.
+- `internal/minecraft` — `InstallService` / `BackupService`, constructed with functional options.
+- `internal/installer` — `ServerFlavor` interface; only Vanilla implemented (`vanilla.go`). `--flavor purpur` passes flag parsing but errors "not yet implemented"; the `purpur` cobra command is an empty stub.
+- `internal/java` — JRE download/management per Minecraft version.
+- `internal/provisioner` — renders the instance filesystem; templates embedded with `//go:embed all:templates` (`start.sh`, `stop.sh`, `log4j2.xml`) under `internal/provisioner/templates`, rendered via `text/template`.
+- `internal/mojang` — Mojang API client.
+- `internal/repository` — Storm (BoltDB) persistence.
+- `internal/config` — viper property keys plus version vars (`Version`, `Commit`, ...) injected by goreleaser ldflags; shown by `mineserver version`.
+- `internal/errs` — shared sentinel errors.
 
-- **Language**: Go (version 1.26.2+)
-- **CLI Framework**: Cobra & Viper for robust CLI interactions and configuration management.
-- **Persistence**: Storm (BoltDB based) for a zero-dependency, single-file embedded database.
-- **Logging**: `log/slog` for structured, high-performance logging.
-- **Testing Strategy**:
-  - **Unit Testing**: Extensive use of `testify` and `gock` for mocking HTTP responses.
-  - **Integration Testing**: Using `testcontainers-go` for environment-accurate tests (e.g., SSH validation).
-- **Template-driven Configuration**: Leveraging Go's `text/template` ensures that startup scripts and configurations are consistent yet customizable.
-- **Functional Options**: Services and clients use the functional options pattern for flexible, type-safe configuration.
-- **Release**: `goreleaser` for automated cross-platform builds and artifact signing.
+## Conventions
 
-## Key Commands
+- Logging: `log/slog` via `internal/logger`.
+- Runtime config: `$HOME/.mineserver/config.yaml` (fallback `./config.yaml`), overridable with `--config`; defaults are registered in `cmd/cli/cmd/root.go`.
+- Tests: testify + `gock` for HTTP mocking (Mojang hosts `launchermeta`/`piston-meta`/`piston-data.mojang.com`); fixtures live in `internal/mojang/samples` and `internal/minecraft/test_samples`.
+- Trust `cmd/cli/cmd/*.go` over README for flags — the README install snippet uses a stale name (`--enable-rcon`; the real flag is `--rcon-enabled`).
 
-### Development
-- **Build**: `go build -o mineserver ./cmd/cli`
-- **Test**: `go test ./...`
-- **Tidy**: `go mod tidy`
-- **Lint**: `make lint`
-- **Vulnerability Check**: `make vulncheck`
+## Release
 
-### Application Usage
-- **Install Server**:
-  ```bash
-  mineserver install --flavor vanilla --version 1.21.3 --dest ./my-server --motd "My Awesome Server" --memory-limit 2g
-  ```
-- **List Versions**: `mineserver install --list` (defaults to vanilla flavor)
-- **Backup Instance**:
-  ```bash
-  mineserver backup save --instance-folder ./my-server --backup-folder ./backups --max-backup-files 5
-  ```
-- **Restore Backup**:
-  ```bash
-  mineserver backup restore --instance-folder ./restored-server --backup-file ./backups/my-server_2024-12-31_12-00-00_backup.zip
-  ```
-
-## Development Conventions
-
-- **Internal Package**: Domain logic resides in `internal/` to maintain a clean API and prevent external imports.
-- **Dependency Injection**: Heavy use of interface-based components to facilitate testing and modularity.
-- **Surgical Updates**: Prefer targeted changes to existing files over large refactors unless explicitly requested.
-
-## Improvement Points
-
-- **Error Handling**: Enhance error wrapping with consistent use of `%w` and potentially introduce domain-specific error types.
-- **Expanded Flavor Support**: Implement support for additional flavors like Forge, Fabric, and Quilt.
-- **Plugin/Mod Management**: Integrate with SpigotMC/Modrinth/CurseForge APIs for automated plugin and mod installation.
-- **Remote Orchestration**: Expand the existing SSH utilities to support remote instance management and deployment.
-- **Concurrency**: Parallelize artifact downloads and backup processes to improve performance.
-- **User Experience (UX)**:
-  - Add interactive progress bars for long-running operations (downloads, backups).
-  - Implement an interactive "wizard" mode for server installation.
-- **Cloud Integration**: Add support for S3-compatible storage for backups.
-- **API Mode**: Provide an option to run as a background service with a REST or gRPC API for remote control or Web UI integration.
+- Pushing a `v*` tag triggers goreleaser via `.github/workflows/releases.yml`; version info is injected by ldflags into `internal/config`.
+- Local snapshot: `go tool goreleaser release --snapshot --clean`. Note its before-hooks run `go mod tidy`, tests, govulncheck, and lint — all must pass (Docker needed for tests).
+- Builds are linux-only (amd64, arm64, armv6/7), `CGO_ENABLED=0`, static; binary name `mineserver`.
