@@ -55,6 +55,7 @@ func TestValidateFileIntegrity(t *testing.T) {
 
 	t.Run("given a valid file hash should return error", func(t *testing.T) {
 		file := "../mojang/testdata/server.zip"
-		assert.Error(t, ValidateFileIntegrity(context.Background(), file, "fe5c3e7c6983ac7ea8a23bd9f2d8b2351286abcd"))
+		err := ValidateFileIntegrity(context.Background(), file, "fe5c3e7c6983ac7ea8a23bd9f2d8b2351286abcd")
+		assert.ErrorIs(t, err, ErrChecksumValidationFailed)
 	})
 }

@@ -10,6 +10,8 @@ var (
 	ErrInstallationFailed = errors.New("installation failed")
 	// ErrInvalidInstanceConfig is returned when the instance configuration is invalid
 	ErrInvalidInstanceConfig = errors.New("invalid instance configuration")
+	// ErrBackupFileNotFound is returned when a backup file to restore does not exist
+	ErrBackupFileNotFound = errors.New("backup file not found")
 )
 
 // InstallError provides context for installation failures

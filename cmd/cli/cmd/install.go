@@ -14,13 +14,9 @@ var installCmd = &cobra.Command{
 	Use:   "install",
 	Short: "Installs a Minecraft server instance",
 	Long:  `Installs a Minecraft server instance.`,
-	Run: func(cmd *cobra.Command, args []string) {
+	RunE: func(cmd *cobra.Command, args []string) error {
 		logger.GetLogger().With("headless", installOpts.Headless).Info("debugging")
-		ctx := context.Background()
-
-		if err := runInstall(ctx, installOpts); err != nil {
-			panic(err)
-		}
+		return runInstall(context.Background(), installOpts)
 	},
 }
 

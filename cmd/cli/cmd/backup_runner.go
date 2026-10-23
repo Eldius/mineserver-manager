@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/minecraft"
 )
@@ -30,5 +31,11 @@ func runBackupRestore(ctx context.Context, opts struct {
 	fromFile string
 	toFolder string
 }) error {
-	return minecraft.NewBackupService().Restore(ctx, opts.toFolder, opts.fromFile)
+	if err := minecraft.NewBackupService().Restore(ctx, opts.toFolder, opts.fromFile); err != nil {
+		if errors.Is(err, minecraft.ErrBackupFileNotFound) {
+			return fmt.Errorf("backup file not found: %s", opts.fromFile)
+		}
+		return fmt.Errorf("restoring backup: %w", err)
+	}
+	return nil
 }

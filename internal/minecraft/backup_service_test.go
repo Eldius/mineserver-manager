@@ -17,6 +17,12 @@ func init() {
 	}))
 }
 
+func TestRestoreBackupFileNotFound(t *testing.T) {
+	s := NewBackupService()
+	err := s.Restore(context.Background(), t.TempDir(), "/nonexistent/my-backup.zip")
+	assert.ErrorIs(t, err, ErrBackupFileNotFound)
+}
+
 func TestMapBackupFiles(t *testing.T) {
 	t.Run("given a folder containing some valid backup files should return the right size files map", func(t *testing.T) {
 		files, err := mapBackupFiles(context.Background(), "./testdata/")

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/asdine/storm/v3"
 	"github.com/eldius/mineserver-manager/internal/model"
@@ -21,7 +22,7 @@ func NewStormRepository(dbPath string) (Repository, error) {
 
 func (r *stormRepository) SaveInstance(ctx context.Context, i *model.Instance) error {
 	if err := r.db.Save(i); err != nil {
-		return fmt.Errorf("saving instance: %w", err)
+		return fmt.Errorf("%w: %v", ErrSaveFailed, err)
 	}
 	return nil
 }
@@ -29,7 +30,10 @@ func (r *stormRepository) SaveInstance(ctx context.Context, i *model.Instance) e
 func (r *stormRepository) GetInstance(ctx context.Context, id string) (*model.Instance, error) {
 	var i model.Instance
 	if err := r.db.One("ID", id, &i); err != nil {
-		return nil, fmt.Errorf("getting instance: %w", err)
+		if errors.Is(err, storm.ErrNotFound) {
+			return nil, fmt.Errorf("getting instance %s: %w", id, ErrNotFound)
+		}
+		return nil, fmt.Errorf("getting instance %s: %w", id, err)
 	}
 	return &i, nil
 }
@@ -45,10 +49,13 @@ func (r *stormRepository) ListInstances(ctx context.Context) ([]model.Instance, 
 func (r *stormRepository) DeleteInstance(ctx context.Context, id string) error {
 	var i model.Instance
 	if err := r.db.One("ID", id, &i); err != nil {
-		return fmt.Errorf("finding instance to delete: %w", err)
+		if errors.Is(err, storm.ErrNotFound) {
+			return fmt.Errorf("finding instance to delete %s: %w", id, ErrNotFound)
+		}
+		return fmt.Errorf("finding instance to delete %s: %w", id, err)
 	}
 	if err := r.db.DeleteStruct(&i); err != nil {
-		return fmt.Errorf("deleting instance: %w", err)
+		return fmt.Errorf("%w: %v", ErrDeleteFailed, err)
 	}
 	return nil
 }

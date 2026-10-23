@@ -56,8 +56,12 @@ func runInstall(ctx context.Context, opts installCmdOpts) error {
 
 	client := minecraft.NewInstallService(svcOpts...)
 
+	baseOpts, err := opts.ToInstanceOpts()
+	if err != nil {
+		return err
+	}
 	instanceOpts := append(
-		opts.ToInstanceOpts(),
+		baseOpts,
 		config.WithVersion(opts.ServerVersion),
 		config.ToDestinationFolder(opts.DestinationFolder),
 		config.WithHeadlessConfig(opts.Headless),
@@ -79,7 +83,7 @@ func runInstall(ctx context.Context, opts installCmdOpts) error {
 	return nil
 }
 
-func (o installCmdOpts) ToInstanceOpts() []config.InstanceOpt {
+func (o installCmdOpts) ToInstanceOpts() ([]config.InstanceOpt, error) {
 	opts := []config.InstanceOpt{config.WithMemoryLimit(o.MemoryLimit)}
 	if o.Motd != "" {
 		opts = append(opts, config.WithServerPropsMotd(o.Motd))
@@ -94,13 +98,12 @@ func (o installCmdOpts) ToInstanceOpts() []config.InstanceOpt {
 		if o.RconPass == "" {
 			passwd, err := utils.PasswordPrompt()
 			if err != nil {
-				slog.With("error", err).Error("failed to prompt for password")
-				panic(err)
+				return nil, fmt.Errorf("prompting for RCON password: %w", err)
 			}
 			o.RconPass = passwd
 		}
 		if o.RconPass == "" {
-			panic(errors.New("RCON password mustn't be empty when RCON is enabled"))
+			return nil, errors.New("RCON password mustn't be empty when RCON is enabled")
 		}
 		opts = append(opts, config.WithServerPropsRconEnabled(o.RconPort, o.RconPass))
 	}
@@ -109,5 +112,5 @@ func (o installCmdOpts) ToInstanceOpts() []config.InstanceOpt {
 		opts = append(opts, config.WithWhitelistedUsers(o.users))
 	}
 
-	return opts
+	return opts, nil
 }

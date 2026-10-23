@@ -138,5 +138,5 @@ func findJDKUnpackedFolder(root string) (string, error) {
 		}
 	}
 
-	return "", err
+	return "", fmt.Errorf("%w: no jdk-* folder found in %s", ErrJavaInstallFailed, root)
 }

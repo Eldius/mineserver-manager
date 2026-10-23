@@ -6,8 +6,6 @@ import (
 )
 
 var (
-	// ErrRequestFailed is returned when a mojang API request fails
-	ErrRequestFailed = errors.New("mojang API request failed")
 	// ErrDecodeFailed is returned when decoding a mojang API response fails
 	ErrDecodeFailed = errors.New("mojang API response decoding failed")
 )

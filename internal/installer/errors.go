@@ -10,8 +10,6 @@ var (
 	ErrFlavorNotFound = errors.New("flavor not found")
 	// ErrVersionNotFound is returned when a requested version is not found for a flavor
 	ErrVersionNotFound = errors.New("version not found")
-	// ErrDownloadFailed is returned when a download operation fails
-	ErrDownloadFailed = errors.New("download failed")
 )
 
 // DownloadError provides context for download failures

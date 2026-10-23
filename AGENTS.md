@@ -35,6 +35,7 @@ Go CLI (`mineserver` binary) to install and manage Minecraft servers: version di
 - Logging: `log/slog` via `internal/logger`.
 - Runtime config: `$HOME/.mineserver/config.yaml` (fallback `./config.yaml`), overridable with `--config`; defaults are registered in `cmd/cli/cmd/root.go`.
 - Tests: testify + `gock` for HTTP mocking (Mojang hosts `launchermeta`/`piston-meta`/`piston-data.mojang.com`); fixtures live in `testdata/` dirs (`internal/mojang/testdata`, `internal/minecraft/testdata`, `internal/ssh/testdata`).
+- Errors: per-package sentinel errors (`ErrXxx` in the returning package's `errors.go` — no shared errs package), always wrapped with `%w`. Custom types (`InstallError`, `DownloadError`, `APIError`) carry context and wrap a sentinel for the category. Check with `errors.Is`/`errors.As` only at the cmd boundary; services return errors, never panic. Don't export a sentinel that has no `errors.Is` consumer.
 - Flag definitions live in `cmd/cli/cmd/*.go` — check them there if CLI behavior is unclear.
 
 ## Release

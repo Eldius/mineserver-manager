@@ -76,6 +76,10 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 
 func (s *backupService) Restore(ctx context.Context, instancePath, backupFile string) error {
 
+	if _, err := os.Stat(backupFile); err != nil {
+		return fmt.Errorf("restoring backup %s: %w", backupFile, ErrBackupFileNotFound)
+	}
+
 	if err := os.MkdirAll(instancePath, os.ModePerm); err != nil {
 		return fmt.Errorf("creating backup dir: %w", err)
 	}

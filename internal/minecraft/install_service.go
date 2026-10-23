@@ -14,16 +14,11 @@ import (
 	"github.com/eldius/mineserver-manager/internal/provisioner"
 	"github.com/eldius/mineserver-manager/internal/repository"
 	"github.com/eldius/mineserver-manager/internal/buildinfo"
-	"github.com/eldius/mineserver-manager/internal/httpx"
 	"github.com/eldius/mineserver-manager/internal/java"
 	"os"
 	"path/filepath"
 	"runtime"
 	"time"
-)
-
-var (
-	ErrChecksumValidationFailed = httpx.ErrChecksumValidationFailed
 )
 
 type InstallServiceConfig struct {

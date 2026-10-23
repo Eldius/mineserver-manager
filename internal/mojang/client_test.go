@@ -8,6 +8,22 @@ import (
 	"time"
 )
 
+func TestListVersionsDecodeError(t *testing.T) {
+	defer gock.Off()
+
+	gock.New("https://launchermeta.mojang.com").
+		Get("/mc/game/version_manifest.json").
+		Reply(200).
+		BodyString("{invalid json")
+
+	c := NewClient(WithTimeout(1 * time.Second))
+	_, err := c.ListVersions(context.Background())
+
+	assert.ErrorIs(t, err, ErrDecodeFailed)
+	var apiErr *APIError
+	assert.ErrorAs(t, err, &apiErr)
+}
+
 func TestListVersions(t *testing.T) {
 	t.Run("given a simple version query should return success with the right data", func(t *testing.T) {
 		defer gock.Off() // Flush pending mocks after test execution
