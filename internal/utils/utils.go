@@ -2,12 +2,8 @@
 package utils
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/logger"
 	"golang.org/x/term"
-	"io"
 	"os/user"
 	"path/filepath"
 	"strings"
@@ -16,13 +12,6 @@ import (
 func Must[T any](obj T, err error) T {
 	if err != nil {
 		panic(err)
-	}
-	return obj
-}
-
-func WarnOnError[T any](obj T, err error) T {
-	if err != nil {
-		logger.GetLogger().With("error", err).Warn("WarnOnError")
 	}
 	return obj
 }
@@ -61,14 +50,4 @@ func AbsolutePath(path string) (string, error) {
 		return "", fmt.Errorf("expanded path: %w", err)
 	}
 	return filepath.Abs(path)
-}
-
-// ShaHash calculates hash from io.Reader content
-func ShaHash(r io.Reader) (string, error) {
-	hash := sha256.New()
-	if _, err := io.Copy(hash, r); err != nil {
-		err = fmt.Errorf("reading file to backup (%s): %w", r, err)
-		return "", err
-	}
-	return hex.EncodeToString(hash.Sum(nil)), nil
 }

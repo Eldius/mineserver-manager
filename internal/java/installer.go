@@ -98,7 +98,6 @@ func Install(ctx context.Context, dest string, v int, arch, osName string, timeo
 		return "", err
 	}
 
-	//return dest, nil
 	jdkUnpacked, err := findJDKUnpackedFolder(dest)
 	if err != nil {
 		err = fmt.Errorf("finding unpacked jdk root folder: %w", err)
@@ -119,11 +118,10 @@ func Install(ctx context.Context, dest string, v int, arch, osName string, timeo
 		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
 		return "", err
 	}
-	return jdkUnpacked, nil
+	return jdkBasePath, nil
 }
 
 func findJDKUnpackedFolder(root string) (string, error) {
-	fmt.Println("looking for JDK folder")
 	entries, err := os.ReadDir(root)
 	if err != nil {
 		err = fmt.Errorf("reading jdk root folder (%s): %w", root, err)
@@ -131,9 +129,7 @@ func findJDKUnpackedFolder(root string) (string, error) {
 	}
 
 	for _, entry := range entries {
-		fmt.Printf(" - %s (is dir: %v)\n", entry.Name(), entry.IsDir())
 		if entry.IsDir() && strings.HasPrefix(entry.Name(), "jdk") {
-			fmt.Println("found", entry.Name())
 			return filepath.Join(root, entry.Name()), nil
 		}
 	}
