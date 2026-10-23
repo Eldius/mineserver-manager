@@ -3,7 +3,7 @@ package installer
 import (
 	"context"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/utils"
+	"github.com/eldius/mineserver-manager/internal/httpx"
 	"path/filepath"
 	"time"
 )
@@ -23,8 +23,8 @@ func NewDownloader(timeout time.Duration) Downloader {
 }
 
 func (d *vanillaDownloader) DownloadServer(ctx context.Context, url, sha1, dest string) (string, error) {
-	destFile := filepath.Join(dest, utils.GetFileName(url))
-	if err := utils.DownloadFile(ctx, d.timeout, url, destFile); err != nil {
+	destFile := filepath.Join(dest, httpx.GetFileName(url))
+	if err := httpx.DownloadFile(ctx, d.timeout, url, destFile); err != nil {
 		return "", &DownloadError{
 			URL:  url,
 			Dest: destFile,
@@ -32,7 +32,7 @@ func (d *vanillaDownloader) DownloadServer(ctx context.Context, url, sha1, dest 
 		}
 	}
 
-	if err := utils.ValidateFileIntegrity(ctx, destFile, sha1); err != nil {
+	if err := httpx.ValidateFileIntegrity(ctx, destFile, sha1); err != nil {
 		return "", &DownloadError{
 			URL:  url,
 			Dest: destFile,

@@ -13,7 +13,7 @@ import (
 	"github.com/eldius/mineserver-manager/internal/mojang"
 	"github.com/eldius/mineserver-manager/internal/provisioner"
 	"github.com/eldius/mineserver-manager/internal/repository"
-	"github.com/eldius/mineserver-manager/internal/utils"
+	"github.com/eldius/mineserver-manager/internal/httpx"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -21,7 +21,7 @@ import (
 )
 
 var (
-	ErrChecksumValidationFailed = utils.ErrChecksumValidationFailed
+	ErrChecksumValidationFailed = httpx.ErrChecksumValidationFailed
 )
 
 type InstallServiceConfig struct {

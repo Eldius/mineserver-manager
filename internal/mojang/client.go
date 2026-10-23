@@ -5,7 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/eldius/mineserver-manager/internal/utils"
+	"github.com/eldius/mineserver-manager/internal/httpx"
 	"net/http"
 	"time"
 )
@@ -145,7 +145,7 @@ func (c *apiClient) GetUsersInfo(users ...string) (UserIDResponse, error) {
 }
 
 func (c *apiClient) httpClient() http.Client {
-	return utils.HTTPClient(c.cfg.Timeout)
+	return httpx.HTTPClient(c.cfg.Timeout)
 }
 
 func WithTimeout(d time.Duration) ClientOpt {

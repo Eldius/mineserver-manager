@@ -3,6 +3,7 @@ package minecraft
 import (
 	"context"
 	"fmt"
+	"github.com/eldius/mineserver-manager/internal/archive"
 	"github.com/eldius/mineserver-manager/internal/utils"
 	"log/slog"
 	"os"
@@ -62,7 +63,7 @@ func (s *backupService) Backup(ctx context.Context, instancePath, backupDestPath
 			ts.Format(bkpTimestampFormat),
 		))
 
-	if err := utils.PackFiles(ctx, instancePath, destFile); err != nil {
+	if err := archive.PackFiles(ctx, instancePath, destFile); err != nil {
 		return nil, fmt.Errorf("writing backup file: %w", err)
 	}
 
@@ -79,7 +80,7 @@ func (s *backupService) Restore(ctx context.Context, instancePath, backupFile st
 		return fmt.Errorf("creating backup dir: %w", err)
 	}
 
-	return utils.Unpack(ctx, instancePath, backupFile)
+	return archive.Unpack(ctx, instancePath, backupFile)
 }
 
 func (s *backupService) RolloverBackupFiles(ctx context.Context, backupDestFolder, backupName string, maxBkpFiles int) error {

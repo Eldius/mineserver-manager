@@ -12,7 +12,7 @@ Go CLI (`mineserver` binary) to install and manage Minecraft servers: version di
 
 ### Gotchas
 
-- **`go test ./...` fails without Docker**: `internal/utils/ssh_test.go` uses testcontainers (pulls `lscr.io/linuxserver/openssh-server`). Without Docker: `go test $(go list ./... | grep -v /internal/utils)`. This also makes `task test` / `task validate` fail.
+- **`go test ./...` fails without Docker**: `internal/ssh/ssh_test.go` uses testcontainers (pulls `lscr.io/linuxserver/openssh-server`). Without Docker: `go test $(go list ./... | grep -v /internal/ssh)`. This also makes `task test` / `task validate` fail.
 - Dev tools are Go tool directives in `go.mod` — invoke via `go tool task`, `go tool goreleaser`, `go tool govulncheck`, `go tool dlv`, `go tool deadcode`. Exception: `golangci-lint` is expected at `$(go env GOPATH)/bin/golangci-lint` (the taskfile hardcodes that path; CI installs it via the golangci-lint.run curl script).
 - Requires Go 1.27.3 per `go.mod` (CI pins 1.26.2 and relies on toolchain auto-download).
 - The `Makefile` holds only the maintainer's personal workflows (manual local runs, remote deploys against a hardcoded test host) — CI checks and releases live in `taskfile.yaml`. `task release-tag` creates and pushes git tags; don't run it casually.
@@ -27,6 +27,7 @@ Go CLI (`mineserver` binary) to install and manage Minecraft servers: version di
 - `internal/mojang` — Mojang API client.
 - `internal/repository` — Storm (BoltDB) persistence.
 - `internal/config` — viper property keys plus version vars (`Version`, `Commit`, ...) injected by goreleaser ldflags; shown by `mineserver version`.
+- `internal/httpx` / `internal/archive` / `internal/ssh` — HTTP download + checksum helpers, zip/tar.gz packing, SSH exec; split out of the old grab-bag `internal/utils`, which now keeps only small generic helpers (`Must`, `PasswordPrompt`, path helpers).
 
 ## Conventions
 

@@ -1,4 +1,5 @@
-package utils
+// Package ssh runs commands on remote hosts over SSH.
+package ssh
 
 import (
 	"context"

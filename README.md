@@ -90,7 +90,7 @@ Settings are read from `$HOME/.mineserver/config.yaml` (fallback: `./config.yaml
 ## development ##
 
 ```shell
-go test ./...              # tests (needs Docker for internal/utils SSH test)
+go test ./...              # tests (needs Docker for internal/ssh test)
 golangci-lint run          # lint
 go tool govulncheck ./...  # vulnerability check
 go tool task validate      # all of the above — what CI runs

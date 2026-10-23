@@ -1,9 +1,13 @@
-package utils
+// Package archive packs and unpacks server instance files
+// (zip backups and .tar.gz distribution packages).
+package archive
 
 import (
 	"archive/zip"
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
 	"io"
@@ -146,4 +150,10 @@ func packedFileName(path, src string) string {
 	fmt.Printf("  file path: %s\n", path)
 	packedFileName := strings.TrimPrefix(path, src)
 	return strings.TrimPrefix(packedFileName, "/")
+}
+
+func shaHash(content []byte) string {
+	hash := sha256.New()
+	hash.Write(content)
+	return hex.EncodeToString(hash.Sum(nil))
 }

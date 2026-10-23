@@ -4,7 +4,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/eldius/mineserver-manager/internal/logger"
-	"github.com/eldius/mineserver-manager/internal/utils"
+	"github.com/eldius/mineserver-manager/internal/archive"
+	"github.com/eldius/mineserver-manager/internal/httpx"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -69,8 +70,8 @@ func Download(ctx context.Context, v int, arch, osName string, timeout time.Dura
 		return "", err
 	}
 
-	dest := filepath.Join(tempDir, utils.GetFileName(u))
-	if err := utils.DownloadFile(ctx, timeout, u, dest); err != nil {
+	dest := filepath.Join(tempDir, httpx.GetFileName(u))
+	if err := httpx.DownloadFile(ctx, timeout, u, dest); err != nil {
 		err = fmt.Errorf("downloading java runtime: %w", err)
 		return "", err
 	}
@@ -91,7 +92,7 @@ func Install(ctx context.Context, dest string, v int, arch, osName string, timeo
 		_ = os.RemoveAll(filepath.Dir(jdkPackage))
 	}()
 
-	if err = utils.UnpackTarGZ(ctx, jdkPackage, dest); err != nil {
+	if err = archive.UnpackTarGZ(ctx, jdkPackage, dest); err != nil {
 		err = fmt.Errorf("unpacking jdk package: %w", err)
 		log.With("error", err).ErrorContext(ctx, "Failed to unpack JDK package")
 		return "", err
