@@ -2,12 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"time"
+
 	initCfg "github.com/eldius/initial-config-go/configs"
 	"github.com/eldius/initial-config-go/setup"
 	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"os"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -30,6 +32,7 @@ var rootCmd = &cobra.Command{
 			initCfg.LogOutputToStdoutKey:            true,
 		}),
 	),
+	PersistentPostRunE: setup.PersistentPostRunE(1 * time.Second),
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
