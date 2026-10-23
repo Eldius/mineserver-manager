@@ -1,17 +1,20 @@
 
-ifeq ($(VERSION),)
-     VERSION:=$(shell git describe --tags --abbrev=0 | awk -F .   '{OFS="."; $$NF+=1; print}')
-endif
+# Personal/local workflows only.
+# CI-style checks (test, lint, vulncheck, validate) and releases live in
+# taskfile.yaml — run them via `go tool task <name>`.
 
 TEST_SERVER ?= 192.168.0.185
 
+snapshot:
+	go tool task snapshot
 
 test:
-	go clean -cache
-	go test ./... -cover -covermode=set -coverpkg=./... -coverprofile=coverage.out
-	go tool cover -html=coverage.out
+	go tool task test
 
-install:
+validate:
+	go tool task validate
+
+install: snapshot
 	$(eval TMP := $(shell mktemp -d))
 	@echo "temp folder: $(TMP)"
 	go run ./cmd/cli install --dest $(TMP) --headless --rcon-enabled --motd "My Awsome Server" --level-name "My Precious" --seed "$(TMP)"
@@ -19,22 +22,7 @@ install:
 versions:
 	go run ./cmd/cli install --list
 
-vulncheck:
-	govulncheck ./...
-
-lint:
-	golangci-lint run
-
-validate: test lint vulncheck
-	@echo "Validate finished."
-
-snapshot-local:
-	goreleaser release --snapshot --clean
-
-release-local:
-	goreleaser release --clean --skip=publish
-
-put:
+put: snapshot
 	echo 'rm /home/eldius/.bin/mineserver' | sftp $(USER)@$(TEST_SERVER)
 	echo 'put ./dist/mineserver-cli_linux_arm64_v8.0/mineserver .bin/' | sftp $(USER)@$(TEST_SERVER)
 
@@ -94,21 +82,3 @@ restore-remote:
 
 get-remote-backups: .tmp
 	sftp $(USER)@$(TEST_SERVER):/mineservers/backup/test-server-backup_*_backup.zip* .tmp/
-
-
-release: test lint vulncheck
-	@echo ""
-	@echo "##############################"
-	@echo "# Generating next version... #"
-	@echo "##############################"
-	@echo ""
-	@echo "Next version: $(VERSION)"
-	@echo ""
-	@echo ""
-
-	git tag $(VERSION)
-	git push
-	git push --tags
-	@echo "------------------------------"
-	@echo ""
-
