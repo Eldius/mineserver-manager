@@ -1,12 +1,10 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
-	"os"
-	"time"
 
-	initCfg "github.com/eldius/initial-config-go/configs"
-	"github.com/eldius/initial-config-go/setup"
+	"github.com/eldius/cli-telemetry-helper/pkg/setup"
 	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -14,25 +12,11 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "mineserver-manager",
-	Short: "A simple CLI tool to manage Minecraft server installations",
-	Long:  `A simple CLI tool to manage Minecraft server installations.`,
-	PersistentPreRunE: setup.PersistentPreRunE(config.AppName, setup.WithConfigFileToBeUsed(cfgFile),
-		setup.WithDefaultCfgFileLocations("/.mineserver", "."),
-		setup.WithDefaultCfgFileName("config"),
-		setup.WithDefaultValues(map[string]any{
-			config.AppMinecraftAPITimeoutPropKey:    "10s",
-			config.AppInstallDownloadTimeoutPropKey: "300s",
-			config.AppDebugModePropKey:              false,
-			config.AppRequestLogPropKey:             false,
-			config.AppInstallPathPropKey:            "./.tmp",
-			config.AppHomePathPropKey:               config.AppHomeDefaultValue,
-			initCfg.LogLevelKey:                     initCfg.LogLevelDEBUG,
-			initCfg.LogFormatKey:                    initCfg.LogFormatJSON,
-			initCfg.LogOutputToStdoutKey:            true,
-		}),
-	),
-	PersistentPostRunE: setup.PersistentPostRunE(1 * time.Second),
+	Use:                "mineserver-manager",
+	Short:              "A simple CLI tool to manage Minecraft server installations",
+	Long:               `A simple CLI tool to manage Minecraft server installations.`,
+	PersistentPreRunE:  setup.PersistentPreRunE,
+	PersistentPostRunE: setup.PersistentPostRunE,
 	// Uncomment the following line if your bare application
 	// has an action associated with it:
 	// Run: func(cmd *cobra.Command, args []string) { },
@@ -44,11 +28,8 @@ var (
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
-	}
+func Execute(ctx context.Context) error {
+	return setup.CobraCmdExecute(ctx, rootCmd)
 }
 
 func init() {

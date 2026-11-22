@@ -2,28 +2,32 @@ package minecraft
 
 import (
 	"context"
-	"github.com/eldius/initial-config-go/configs"
-	"github.com/eldius/initial-config-go/setup"
-	"github.com/eldius/mineserver-manager/internal/config"
-	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
+
+	"github.com/eldius/cli-telemetry-helper/pkg/setup"
+	"github.com/stretchr/testify/assert"
 )
 
-func init() {
-	_ = setup.InitSetup(context.Background(), config.AppName, setup.WithDefaultValues(map[string]any{
-		configs.LogLevelKey:  configs.LogLevelDEBUG,
-		configs.LogFormatKey: configs.LogFormatJSON,
-	}))
+func initTest(t *testing.T) {
+	t.Helper()
+	assert.Nil(t, setup.InitViper(t.Context(), setup.Service{
+		Name:    "my-testing-case",
+		Version: "",
+	}, setup.WithConfigFileLookupDirectories("../..")))
 }
 
 func TestRestoreBackupFileNotFound(t *testing.T) {
+	initTest(t)
+
 	s := NewBackupService()
 	err := s.Restore(context.Background(), t.TempDir(), "/nonexistent/my-backup.zip")
 	assert.ErrorIs(t, err, ErrBackupFileNotFound)
 }
 
 func TestMapBackupFiles(t *testing.T) {
+	initTest(t)
+
 	t.Run("given a folder containing some valid backup files should return the right size files map", func(t *testing.T) {
 		files, err := mapBackupFiles(context.Background(), "./testdata/")
 		assert.NoError(t, err)
