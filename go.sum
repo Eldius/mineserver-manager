@@ -356,8 +356,8 @@ github.com/dustin/go-humanize v1.0.1 h1:GzkhY7T5VNhEkwH0PVJgjz+fX1rhBrR7pRT3mDkp
 github.com/dustin/go-humanize v1.0.1/go.mod h1:Mu1zIs6XwVuF/gI1OepvI0qD18qycQx+mFykh5fBlto=
 github.com/elazarl/goproxy v1.7.2 h1:Y2o6urb7Eule09PjlhQRGNsqRfPmYI3KKQLFpCAV3+o=
 github.com/elazarl/goproxy v1.7.2/go.mod h1:82vkLNir0ALaW14Rc399OTTjyNREgmdL2cVoIbS6XaE=
-github.com/eldius/cli-telemetry-helper v0.0.1 h1:4Yx1pDShxt5a9+4nERfvjyIeAuyLGtq0sH5MK1Z1Hhs=
-github.com/eldius/cli-telemetry-helper v0.0.1/go.mod h1:69w7R8uqB11wNwLCoK3/pArSdbKM4hUHrXualozjBJg=
+github.com/eldius/cli-telemetry-helper v0.0.2 h1:06S8hmGMPTnhAYrvC1DEDsMrPWedPC9LLH1afUcxmRU=
+github.com/eldius/cli-telemetry-helper v0.0.2/go.mod h1:hhDG9Rw4IrNdkacH7IcOChqfCbEVmeJmyplScGwE0/g=
 github.com/eldius/properties v0.0.4 h1:LunQB9w/uuZH+kVbKrLFlxvSF6U8olBOXaC1eMjd9Bo=
 github.com/eldius/properties v0.0.4/go.mod h1:uHzBW6ssxyjp1lUZzTFdU8o1CyA6qL9JGRMND8VamOQ=
 github.com/elliotchance/orderedmap/v3 v3.1.1 h1:eV7lfZ5fVL8d36b8Wogqi/eqm7R/kZcftA9Yiyj+63M=
