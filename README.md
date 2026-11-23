@@ -90,11 +90,50 @@ Settings are read from `$HOME/.mineserver/config.yaml` (fallback: `./config.yaml
 ## development ##
 
 ```shell
-go test ./...              # tests (needs Docker for internal/ssh test)
+go test ./...              # tests
 golangci-lint run          # lint
 go tool govulncheck ./...  # vulnerability check
 go tool task validate      # all of the above — what CI runs
 ```
+
+### web api / ui ###
+
+A second binary, `mineserver-api` (`./cmd/api`), serves an embedded web UI
+and a JSON API (`/api/*`) to install, list, start/stop and back up server
+instances:
+
+```shell
+go run ./cmd/api --port 8080   # or: make api
+```
+
+Configuration (via `./config.yaml` or `~/.mineserver/config.yaml`):
+
+```yaml
+api:
+  home:
+    path: ~/.mineserver-api   # sandbox root: installs, backups and temp
+                              # files all live (and must stay) under here
+  auth:
+    password: change-me       # login password for the UI; unset = API
+                              # answers 503 on every endpoint
+    token:
+      ttl: 24h
+```
+
+Instances installed by the CLI outside the API home are listed but cannot
+be started/stopped/backed up through the API (path access is confined to
+the API home folder).
+
+The UI source is a Vite + React + TypeScript app in `internal/web/ui`:
+
+```shell
+npm --prefix internal/web/ui run build   # builds into internal/web/static
+npm --prefix internal/web/ui run dev     # dev server, proxies /api to :8080
+```
+
+The build output in `internal/web/static` is embedded via `go:embed` and
+committed, so Go builds work without node — but rebuild and recommit it
+whenever the UI changes (releases package whatever `static/` contains).
 
 ## reference links ##
 

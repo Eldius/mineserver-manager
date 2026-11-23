@@ -14,3 +14,6 @@ telemetry:
     endpoint: 192.168.0.152:5081
   traces:
     endpoint: 192.168.0.152:5081
+api:
+  auth:
+    password: 123P@ss#123

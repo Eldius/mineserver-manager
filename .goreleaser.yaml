@@ -18,7 +18,8 @@ before:
     - golangci-lint run
 
 builds:
-  - id: mineserver-cli
+  - &build-defaults
+    id: mineserver-cli
     env:
       - CGO_ENABLED=0
     goos:
@@ -41,9 +42,16 @@ builds:
     goarm:
       - "6"
       - "7"
+  - <<: *build-defaults
+    id: mineserver-api
+    binary: mineserver-api
+    main: ./cmd/api
 
 archives:
-  - formats: ["tar.gz"]
+  - id: mineserver-cli
+    ids:
+      - mineserver-cli
+    formats: ["tar.gz"]
     name_template: >-
       {{ .ProjectName }}_
       {{- title .Os }}_
@@ -56,6 +64,18 @@ archives:
     format_overrides:
       - goos: windows
         formats: ["zip"]
+  - id: mineserver-api
+    ids:
+      - mineserver-api
+    formats: ["tar.gz"]
+    name_template: >-
+      mineserver-api_
+      {{- title .Os }}_
+      {{- title .Version }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
 checksum:
   name_template: 'checksums.txt'
 snapshot:

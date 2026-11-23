@@ -30,7 +30,7 @@ func Execute() {
 		setup.Run(
 			context.Background(),
 			setup.Service{
-				Name:    config.AppName,
+				Name:    config.CliAppName,
 				Version: buildinfo.Version,
 			},
 			rootCmd,
