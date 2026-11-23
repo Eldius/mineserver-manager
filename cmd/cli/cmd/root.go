@@ -3,8 +3,10 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/eldius/cli-telemetry-helper/pkg/setup"
+	"github.com/eldius/mineserver-manager/internal/buildinfo"
 	"github.com/eldius/mineserver-manager/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -12,14 +14,9 @@ import (
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:                "mineserver-manager",
-	Short:              "A simple CLI tool to manage Minecraft server installations",
-	Long:               `A simple CLI tool to manage Minecraft server installations.`,
-	PersistentPreRunE:  setup.PersistentPreRunE,
-	PersistentPostRunE: setup.PersistentPostRunE,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Use:   "mineserver-manager",
+	Short: "A simple CLI tool to manage Minecraft server installations",
+	Long:  `A simple CLI tool to manage Minecraft server installations.`,
 }
 
 var (
@@ -28,8 +25,27 @@ var (
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
-func Execute(ctx context.Context) error {
-	return setup.CobraCmdExecute(ctx, rootCmd)
+func Execute() {
+	os.Exit(
+		setup.Run(
+			context.Background(),
+			setup.Service{
+				Name:    config.AppName,
+				Version: buildinfo.Version,
+			},
+			rootCmd,
+			setup.WithConfigFileLookupDirectories(".", config.AppHomeDefaultValue),
+			setup.WithEnvPrefix("cli_telemetry"),
+			setup.WithDefaultConfigs(map[string]any{
+				config.AppMinecraftAPITimeoutPropKey:    "10s",
+				config.AppInstallDownloadTimeoutPropKey: "300s",
+				config.AppDebugModePropKey:              false,
+				config.AppRequestLogPropKey:             false,
+				config.AppInstallPathPropKey:            "./.tmp",
+				config.AppHomePathPropKey:               config.AppHomeDefaultValue,
+			}),
+		))
+	//return setup.CobraCmdExecute(ctx, rootCmd)
 }
 
 func init() {
