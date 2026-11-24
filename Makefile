@@ -86,3 +86,9 @@ restore-remote:
 
 get-remote-backups: .tmp
 	sftp $(USER)@$(TEST_SERVER):/mineservers/backup/test-server-backup_*_backup.zip* .tmp/
+
+build-sandbox:
+	docker buildx build --tag=eldius/mineserver-api:dev .
+
+sandbox: build-sandbox
+	docker run --rm -p 8080:8080 eldius/mineserver-api:dev
