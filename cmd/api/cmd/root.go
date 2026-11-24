@@ -5,6 +5,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"os"
 	"path/filepath"
@@ -39,6 +40,14 @@ and the API requires authentication (api.auth.password).`,
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once.
 func Execute() {
+	defer func() {
+		r := recover()
+		if r != nil {
+			fmt.Println("recovered from a panic:", r)
+			os.Exit(1)
+		}
+	}()
+
 	os.Exit(
 		setup.Run(
 			context.Background(),
