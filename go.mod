@@ -13,7 +13,7 @@ tool (
 
 require (
 	github.com/asdine/storm/v3 v3.2.1
-	github.com/eldius/cli-telemetry-helper v0.0.4
+	github.com/eldius/cli-telemetry-helper v0.0.6
 	github.com/eldius/properties v0.0.4
 	github.com/google/uuid v1.6.0
 	github.com/h2non/gock v1.2.0

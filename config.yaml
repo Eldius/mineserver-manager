@@ -3,17 +3,31 @@ log:
   level: debug
   format: json
 telemetry:
-  debug: true
-  headers:
-    Authorization: "Basic bWluZXNlcnZlci1jbGk6bzJvaV9jc0tBdTRneTNMMm9HVm1IMk1hVVROWGpCQlhmVE9qcQ=="
-    organization: default
-    stream-name: default
-  metrics:
-    endpoint: 192.168.0.152:5081
-  logs:
-    endpoint: 192.168.0.152:5081
-  traces:
-    endpoint: 192.168.0.152:5081
+  backends:
+    traces:
+      endpoint: 192.168.0.152:5081
+      enabled: true
+      auth_headers:
+        authorization: "${OPENOBSERVE_AUTH_TOKEN}"
+        organization: default
+        stream: default
+    metrics:
+      endpoint: 192.168.0.152:5081
+      enabled: true
+      auth_headers:
+        authorization: "${OPENOBSERVE_AUTH_TOKEN}"
+        organization: default
+        stream: default
+    logs:
+      endpoint: 192.168.0.152:5081
+      enabled: true
+      auth_headers:
+        authorization: "${OPENOBSERVE_AUTH_TOKEN}"
+        organization: default
+        stream: default
 api:
   auth:
     password: 123P@ss#123
+app:
+  home:
+    path: ./.data

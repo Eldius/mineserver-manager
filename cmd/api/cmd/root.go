@@ -7,6 +7,7 @@ import (
 	"context"
 	"log/slog"
 	"os"
+	"path/filepath"
 
 	"github.com/eldius/cli-telemetry-helper/pkg/setup"
 	"github.com/eldius/mineserver-manager/internal/buildinfo"
@@ -47,15 +48,14 @@ func Execute() {
 			},
 			rootCmd,
 			setup.WithConfigFileLookupDirectories(".", config.AppHomeDefaultValue),
-			setup.WithEnvPrefix("cli_telemetry"),
+			setup.WithEnvPrefix(config.ApiAppEnvPrefix),
 			setup.WithDefaultConfigs(map[string]any{
 				config.AppMinecraftAPITimeoutPropKey:    "10s",
 				config.AppInstallDownloadTimeoutPropKey: "300s",
 				config.AppDebugModePropKey:              false,
 				config.AppRequestLogPropKey:             false,
-				config.AppInstallPathPropKey:            "./.tmp",
+				config.AppInstallPathPropKey:            filepath.Join(config.AppHomeDefaultValue, ".tmp"),
 				config.AppHomePathPropKey:               config.AppHomeDefaultValue,
-				config.ApiHomePathPropKey:               config.ApiHomeDefaultValue,
 				config.ApiAuthPasswordPropKey:           "",
 				config.ApiAuthTokenTTLPropKey:           config.ApiAuthTokenTTLDefault,
 			}),

@@ -4,6 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+
 	"github.com/asdine/storm/v3"
 	"github.com/eldius/mineserver-manager/internal/model"
 )
@@ -13,6 +16,7 @@ type stormRepository struct {
 }
 
 func NewStormRepository(dbPath string) (Repository, error) {
+	_ = os.MkdirAll(filepath.Dir(dbPath), os.ModePerm)
 	db, err := storm.Open(dbPath)
 	if err != nil {
 		return nil, fmt.Errorf("opening storm db: %w", err)

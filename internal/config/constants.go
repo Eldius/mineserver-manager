@@ -9,16 +9,18 @@ const (
 	AppRequestLogPropKey  = "app.request.log"
 	AppDebugModePropKey   = "app.debugmode"
 
-	ApiHomePathPropKey    = "api.home.path"
+	ApiHomePathPropKey     = "api.home.path"
 	ApiAuthPasswordPropKey = "api.auth.password"
 	ApiAuthTokenTTLPropKey = "api.auth.token.ttl"
 
 	AppHomeDefaultValue    = "~/.mineserver"
-	ApiHomeDefaultValue    = "~/.mineserver-api"
 	ApiAuthTokenTTLDefault = "24h"
 
 	VersionsFileName = "versions.json"
 
 	CliAppName = "mineserver-cli"
 	ApiAppName = "mineserver-api"
+
+	CliAppEnvPrefix = "mineserver_cli"
+	ApiAppEnvPrefix = "mineserver_api"
 )

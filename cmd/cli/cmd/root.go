@@ -35,7 +35,7 @@ func Execute() {
 			},
 			rootCmd,
 			setup.WithConfigFileLookupDirectories(".", config.AppHomeDefaultValue),
-			setup.WithEnvPrefix("cli_telemetry"),
+			setup.WithEnvPrefix(config.CliAppEnvPrefix),
 			setup.WithDefaultConfigs(map[string]any{
 				config.AppMinecraftAPITimeoutPropKey:    "10s",
 				config.AppInstallDownloadTimeoutPropKey: "300s",

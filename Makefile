@@ -6,7 +6,8 @@
 TEST_SERVER ?= 192.168.0.185
 
 api:
-	go run ./cmd/api
+	OPENOBSERVE_AUTH_TOKEN=$(OPENOBSERVE_AUTH_TOKEN) \
+		go run ./cmd/api
 
 snapshot:
 	go tool task snapshot

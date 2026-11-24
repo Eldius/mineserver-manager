@@ -11,11 +11,12 @@ import (
 	"io/fs"
 	"log/slog"
 	"net/http"
+	"path/filepath"
 	"strings"
 
+	telemetryhttp "github.com/eldius/cli-telemetry-helper/pkg/http"
 	cfg "github.com/eldius/mineserver-manager/internal/config"
 	"github.com/eldius/mineserver-manager/internal/repository"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // staticFiles holds the React build output (internal/web/static,
@@ -34,7 +35,7 @@ func StartApi(port int) error {
 	// Persistence is best-effort, like in the CLI: the API still serves
 	// the UI and version endpoints without it.
 	var repo repository.Repository
-	if rp, err := repository.NewStormRepository(cfg.GetAppHomePath()); err != nil {
+	if rp, err := repository.NewStormRepository(filepath.Join(cfg.GetAppHomePath(), "stomed.db")); err != nil {
 		slog.With("error", err).Warn("failed to open instance repository; instance endpoints will be unavailable")
 	} else {
 		repo = rp
@@ -61,7 +62,7 @@ func StartApi(port int) error {
 	slog.Info("starting api server", "port", port, "home", sb.Home())
 	s := &http.Server{
 		Addr:    fmt.Sprintf(":%d", port),
-		Handler: otelhttp.NewHandler(mux, "mineserver-manager-api"),
+		Handler: telemetryhttp.ServerMuxTelemetryMiddleware(mux),
 	}
 	return s.ListenAndServe()
 }
@@ -77,6 +78,7 @@ func spaHandler() http.Handler {
 	}
 	fileServer := http.FileServerFS(sub)
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		slog.With("handler", "spa").InfoContext(r.Context(), "starting spa handler")
 		p := strings.TrimPrefix(r.URL.Path, "/")
 		if p != "" {
 			if st, err := fs.Stat(sub, p); err == nil && !st.IsDir() {
